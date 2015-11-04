@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~   Copyright (C) 2015 Alex Neeky
+  ~
+  ~   Licensed under the Apache License, Version 2.0 (the "License");
+  ~   you may not use this file except in compliance with the License.
+  ~   You may obtain a copy of the License at
+  ~
+  ~          http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~   Unless required by applicable law or agreed to in writing, software
+  ~   distributed under the License is distributed on an "AS IS" BASIS,
+  ~   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~   See the License for the specific language governing permissions and
+  ~   limitations under the License.
+  -->
+
+<resources>
+	<string name="app_name">Funstream chat</string>
+	<string name="activity_streams">Streams</string>
+	<string name="activity_stream">Chat</string>
+	<string name="activity_main_chat">Main Chat</string>
+	<string name="activity_login">Login to Funstream</string>
+	<string name="title_activity_about" translatable="false">About</string>
+	<string name="title_activity_licenses">Licenses</string>
+	<string name="refresh">Refresh</string>
+	<string name="search_query_hint">Enter streamer\'s name</string>
+
+
+	<string name="activity_login_prompt_username">Username</string>
+	<string name="activity_login_prompt_password">Password</string>
+	<string name="log_in">Log in</string>
+	<string name="log_in_from_site">Log in using browser (OAuth)</string>
+	<string name="log_in_from_site_desc">* You do not need enter your credentials if you\'re using OAuth</string>
+
+	<string name="log_in_error">Username or Password is incorrect</string>
+
+
+	<string name="error_username_required">Username is required</string>
+	<string name="error_password_required">Password is required</string>
+	<string name="error_login">Login problems</string>
+	<string name="error_didnt_grant_access">Sorry, but you did not grant access for this app</string>
+
+	<string name="tab_title_streams">Streams</string>
+	<string name="tab_title_channels">Channels</string>
+
+	<string name="stream_reload">Reload</string>
+	<string name="error_stream_loading">Can\'t load stream</string>
+	<string name="error_chat_loading">Can\'t load chat</string>
+	<string name="error_no_connection">No connection</string>
+	<string name="error_streams_loading">Can\'t load streams</string>
+	<string name="error_loading_action">Try again</string>
+
+	<string name="action_settings">Settings</string>
+	<string name="search">Streamer name</string>
+	<string name="main">Main</string>
+	<string name="streamer">Message to streamer</string>
+	<string name="prefs_category_title_chat">Chat settings</string>
+	<string name="prefs_chat_scroll">Chat scroll</string>
+	<string name="prefs_chat_scroll_summary">Scroll chat to bottom</string>
+	<string name="prefs_chat_awake">Screen on</string>
+	<string name="prefs_chat_awake_summary">Keep chat screen on</string>
+	<string name="prefs_chat_images">Show images</string>
+	<string name="prefs_chat_images_summary">Allow show images</string>
+
+
+	<string name="chat_connect">Connecting …</string>
+	<string name="chat_reconnect">Reconnecting …</string>
+	<string name="chat_reconnect_error">Reconnect error</string>
+	<string name="chat_connect_error">Connect error</string>
+	<string name="chat_error">Chat error</string>
+
+	<!-- Intro -->
+	<string name="intro_main_link_text">Main chat tab</string>
+	<string name="intro_streamer_message_text">You can send messages to streamer</string>
+	<string name="intro_start_text">Let\'s start!</string>
+
+	<string name="dialog_login_title">Log in</string>
+	<string name="dialog_login_pending">Authenticating …</string>
+
+	<string name="about" translatable="false">
+		<BIG>Non-official android chat client for funstream.tv and sc2tv.ru.</BIG> \n\n
+		<b>(c) Copyright 2015 Alex Neeky</b> \n\n
+
+		<TT>
+			<b>Thanks for awesome libraries to:</b>\n
+			<b>Square, Inc.</b>\n
+			https://github.com/square/okhttp\n
+			https://github.com/square/retrofit\n
+			https://github.com/square/picasso\n
+			https://github.com/square/leakcanary\n\n
+
+			<b>Jake Wharton</b>\n
+			https://github.com/JakeWharton/butterknife\n\n
+
+			<b>Square, Inc. and Google, Inc.</b>\n
+			https://github.com/google/dagger\n\n
+
+			<b>Marshal Chen</b>\n
+			https://github.com/cymcsg/UltimateRecyclerView\n\n
+
+			<b>Naoyuki Kanezawa</b>\n
+			https://github.com/nkzawa/socket.io-client.java\n\n
+
+			<b>Paolo Rotolo</b>\n
+			https://github.com/PaoloRotolo/AppIntro\n\n
+
+			<b>Google, Inc.</b>\n
+			https://github.com/google/material-design-icons\n\n
+		</TT>
+		<b>Nimbus JOSE + JWT</b> \n\n
+		<TT>
+			Copyright 2012-2014, Connect2id Ltd. \n\n
+
+			Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+			this file except in compliance with the License. You may obtain a copy of the
+			License at \n\n
+
+			   http://www.apache.org/licenses/LICENSE-2.0 \n\n
+
+			Unless required by applicable law or agreed to in writing, software distributed
+			under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+			CONDITIONS OF ANY KIND, either express or implied. See the License for the
+			specific language governing permissions and limitations under the License. \n\n
+		</TT>
+		<b>google-gson</b>\n\n
+		<TT>
+			Copyright 2008 Google Inc.\n\n
+
+			Licensed under the Apache License, Version 2.0 (the "License");
+			you may not use this file except in compliance with the License.
+			You may obtain a copy of the License at\n\n
+
+			    http://www.apache.org/licenses/LICENSE-2.0\n\n
+
+			Unless required by applicable law or agreed to in writing, software
+			distributed under the License is distributed on an "AS IS" BASIS,
+			WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+			See the License for the specific language governing permissions and
+			limitations under the License.
+		</TT>\n\n\n
+		<b>Dagger 2</b>\n\n
+		<TT>
+			Copyright 2012 Square, Inc.\n\n
+			Copyright 2012 Google, Inc.\n\n
+
+			Licensed under the Apache License, Version 2.0 (the "License");
+			you may not use this file except in compliance with the License.
+			You may obtain a copy of the License at\n\n
+
+			   http://www.apache.org/licenses/LICENSE-2.0\n\n
+
+			Unless required by applicable law or agreed to in writing, software
+			distributed under the License is distributed on an "AS IS" BASIS,
+			WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+			See the License for the specific language governing permissions and
+			limitations under the License.
+		</TT>\n\n\n
+		<b>Butter Knife</b> \n\n
+		<TT>
+			Copyright 2013 Jake Wharton\n\n
+
+			Licensed under the Apache License, Version 2.0 (the "License");
+			you may not use this file except in compliance with the License.
+			You may obtain a copy of the License at\n\n
+
+			   http://www.apache.org/licenses/LICENSE-2.0\n\n
+
+			Unless required by applicable law or agreed to in writing, software
+			distributed under the License is distributed on an "AS IS" BASIS,
+			WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+			See the License for the specific language governing permissions and
+			limitations under the License.
+		</TT>\n\n\n
+		<b>Emojicon</b> \n\n
+		<TT>
+			Copyright 2014 Hieu Rocker \n\n
+
+			Licensed under the Apache License, Version 2.0 (the "License");
+			you may not use this file except in compliance with the License.
+			You may obtain a copy of the License at \n\n
+
+			 http://www.apache.org/licenses/LICENSE-2.0 \n\n
+
+			Unless required by applicable law or agreed to in writing, software
+			distributed under the License is distributed on an "AS IS" BASIS,
+			WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+			See the License for the specific language governing permissions and
+			limitations under the License. \n\n
+		</TT>
+		<b>Emojicon</b> \n\n
+		<TT>
+			Copyright 2014 Ankush Sachdeva \n\n
+
+			Licensed under the Apache License, Version 2.0 (the "License");
+			you may not use this file except in compliance with the License.
+			You may obtain a copy of the License at \n\n
+
+			 http://www.apache.org/licenses/LICENSE-2.0 \n\n
+
+			Unless required by applicable law or agreed to in writing, software
+			distributed under the License is distributed on an "AS IS" BASIS,
+			WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+			See the License for the specific language governing permissions and
+			limitations under the License. \n\n
+		</TT>
+		<b>socket.io-client.java</b> \n\n
+		<TT>The MIT License (MIT)
+		Copyright (c) 2013 Naoyuki Kanezawa
+
+		Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: \n\n
+
+		The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. \n\n
+
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. \n\n
+
+
+		(The MIT License) \n\n
+
+		Copyright (c) 2011 Guillermo Rauch &lt;guillermo@learnboost.com&gt; \n\n
+
+		Permission is hereby granted, free of charge, to any person obtaining
+		a copy of this software and associated documentation files (the
+		\'Software\'), to deal in the Software without restriction, including
+		without limitation the rights to use, copy, modify, merge, publish,
+		distribute, sublicense, and/or sell copies of the Software, and to
+		permit persons to whom the Software is furnished to do so, subject to
+		the following conditions: \n\n
+
+		The above copyright notice and this permission notice shall be
+		included in all copies or substantial portions of the Software. \n\n
+
+		THE SOFTWARE IS PROVIDED \'AS IS\', WITHOUT WARRANTY OF ANY KIND,
+		EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+		MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+		IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+		CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+		TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+		SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. \n\n
+		</TT>
+		<b>UltimateRecyclerView</b> \n\n
+		<TT>
+		Copyright 2015 Marshal Chen \n\n
+
+		Licensed under the Apache License, Version 2.0 (the "License");
+		you may not use this file except in compliance with the License.
+		You may obtain a copy of the License at \n\n
+
+		   http://www.apache.org/licenses/LICENSE-2.0 \n\n
+
+		Unless required by applicable law or agreed to in writing, software
+		distributed under the License is distributed on an "AS IS" BASIS,
+		WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+		See the License for the specific language governing permissions and
+		limitations under the License. \n\n
+		</TT>
+		<b>Retrofit</b> \n\n
+		<TT>
+			Copyright 2013 Square, Inc. \n\n
+
+			Licensed under the Apache License, Version 2.0 (the "License");
+			you may not use this file except in compliance with the License.
+			You may obtain a copy of the License at \n\n
+
+			   http://www.apache.org/licenses/LICENSE-2.0 \n\n
+
+			Unless required by applicable law or agreed to in writing, software
+			distributed under the License is distributed on an "AS IS" BASIS,
+			WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+			See the License for the specific language governing permissions and
+			limitations under the License. \n\n
+		</TT>
+		<b>Picasso</b> \n\n
+		<TT>
+			Copyright 2013 Square, Inc. \n\n
+
+			Licensed under the Apache License, Version 2.0 (the "License");
+			you may not use this file except in compliance with the License.
+			You may obtain a copy of the License at \n\n
+
+			   http://www.apache.org/licenses/LICENSE-2.0 \n\n
+
+			Unless required by applicable law or agreed to in writing, software
+			distributed under the License is distributed on an "AS IS" BASIS,
+			WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+			See the License for the specific language governing permissions and
+			limitations under the License. \n\n
+		</TT>
+		<b>OkHttp</b> \n\n
+		<TT>
+			Licensed under the Apache License, Version 2.0 (the "License");
+			you may not use this file except in compliance with the License.
+			You may obtain a copy of the License at \n\n
+
+			   http://www.apache.org/licenses/LICENSE-2.0 \n\n
+
+			Unless required by applicable law or agreed to in writing, software
+			distributed under the License is distributed on an "AS IS" BASIS,
+			WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+			See the License for the specific language governing permissions and
+			limitations under the License. \n\n
+		</TT>
+	</string>
+	<string name="service_chat_label" translatable="false">Chat Service</string>
+
+
+</resources>

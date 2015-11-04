@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~   Copyright (C) 2015 Alex Neeky
+  ~
+  ~   Licensed under the Apache License, Version 2.0 (the "License");
+  ~   you may not use this file except in compliance with the License.
+  ~   You may obtain a copy of the License at
+  ~
+  ~          http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~   Unless required by applicable law or agreed to in writing, software
+  ~   distributed under the License is distributed on an "AS IS" BASIS,
+  ~   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~   See the License for the specific language governing permissions and
+  ~   limitations under the License.
+  -->
+
+<resources>
+	<string name="app_name">Фанстрим чат</string>
+  <string name="action_settings">Настройки</string>
+  <string name="activity_login">Войти</string>
+  <string name="activity_login_prompt_password">Пароль</string>
+  <string name="activity_login_prompt_username">Логин sc2tv</string>
+  <string name="activity_stream">Чат</string>
+  <string name="activity_streams">Стримы</string>
+  <string name="error_loading_action">Ещё раз</string>
+  <string name="error_login">Проблемы с логином</string>
+  <string name="error_no_connection">Нет соединения</string>
+  <string name="error_password_required">Пароль обязателен</string>
+  <string name="error_stream_loading">Не удалось загрузить стрим</string>
+  <string name="error_streams_loading">Не удалось загрузить стримы</string>
+  <string name="error_username_required">Логин обязателен</string>
+  <string name="log_in">Войти</string>
+  <string name="log_in_error">Логин или пароль неверен</string>
+  <string name="main">Main</string>
+  <string name="prefs_category_title_chat">Настройки чата</string>
+  <string name="search">Поиск</string>
+  <string name="stream_reload">Перезагрузить</string>
+  <string name="streamer">Сообщение стримеру</string>
+  <string name="title_activity_licenses">Лизензии</string>
+  <string name="activity_main_chat">Main чат</string>
+  <string name="error_chat_loading">Не удалось загрузить чат</string>
+  <string name="intro_main_link_text">Main вкладка чата</string>
+  <string name="intro_start_text">Поехали!</string>
+  <string name="intro_streamer_message_text">Сообщения стримеру</string>
+  <string name="prefs_chat_awake_summary">Не выключать подсветку чата</string>
+  <string name="prefs_chat_awake">Подсветка</string>
+  <string name="prefs_chat_scroll_summary">Скролить чат к новым сообщениям</string>
+  <string name="prefs_chat_scroll">Скролл чата</string>
+  <string name="chat_connect">Соединение …</string>
+  <string name="chat_connect_error">Ошибка соединения</string>
+  <string name="chat_error">Ошибка чата</string>
+  <string name="chat_reconnect">Переподключенние …</string>
+  <string name="chat_reconnect_error">Ошибка переподключения</string>
+  <string name="dialog_login_title">Войти</string>
+  <string name="error_didnt_grant_access">Вы не открыли доступ</string>
+  <string name="log_in_from_site">Логин через сайт (OAuth)</string>
+  <string name="log_in_from_site_desc">* Используя OAuth Вы вводите логин и пароль на сайте, а не в приложение</string>
+  <string name="tab_title_channels">Каналы</string>
+  <string name="tab_title_streams">Стримы</string>
+  <string name="search_query_hint">Имя стримера</string>
+  <string name="dialog_login_pending">Аутентификация …</string>
+  <string name="prefs_chat_images">Показывать изображения</string>
+  <string name="prefs_chat_images_summary">Разрешить показывать изображения из чата</string>
+  <string name="refresh">Обновить</string>
+</resources>

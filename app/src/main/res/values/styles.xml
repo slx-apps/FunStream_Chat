@@ -1,0 +1,81 @@
+<!--
+  ~   Copyright (C) 2015 Alex Neeky
+  ~
+  ~   Licensed under the Apache License, Version 2.0 (the "License");
+  ~   you may not use this file except in compliance with the License.
+  ~   You may obtain a copy of the License at
+  ~
+  ~          http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~   Unless required by applicable law or agreed to in writing, software
+  ~   distributed under the License is distributed on an "AS IS" BASIS,
+  ~   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~   See the License for the specific language governing permissions and
+  ~   limitations under the License.
+  -->
+
+<resources>
+
+	<!-- Base application theme. -->
+	<style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+		<!-- Customize your theme here. -->
+		<item name="searchViewStyle">@style/SearchViewStyle</item>
+		<item name="colorPrimary">@color/primary</item>
+		<item name="colorPrimaryDark">@color/primary_dark</item>
+		<item name="colorAccent">@color/accent</item>
+
+	</style>
+
+	<!-- Tab layouts -->
+	<style name="ChannelTabLayoutStyle" parent="Widget.Design.TabLayout">
+		<item name="tabBackground">@drawable/selectable_tab_background</item>
+		<item name="tabIndicatorColor">@color/accent</item>
+		<item name="tabTextAppearance">@style/TabTextStyle</item>
+	</style>
+	<style name="SmileTabsLight" parent="Widget.Design.TabLayout">
+		<item name="tabIndicatorColor">@color/accent</item>
+		<item name="android:background">@color/primary</item>
+		<item name="tabTextAppearance">@style/TabTextStyle</item>
+	</style>
+	<style name="TabTextStyle" parent="TextAppearance.Design.Tab">
+		<item name="textAllCaps">false</item>
+		<item name="android:textSize">20sp</item>
+		<item name="android:textColor">@android:color/white</item>
+	</style>
+
+	<style name="SearchViewStyle" parent="Widget.AppCompat.SearchView">
+		<item name="queryHint">@string/search_query_hint</item>
+	</style>
+
+	<!-- EditTexts -->
+	<style name="LoginEditTextStyle" parent="Widget.Design.TextInputLayout">
+		<item name="android:maxLines">1</item>
+		<item name="android:singleLine">true</item>
+	</style>
+
+	<!-- Buttons -->
+	<style name="LoginActivityStyle">
+		<item name="colorControlNormal">@color/gray</item>
+		<item name="colorControlActivated">@color/white</item>
+		<item name="colorControlHighlight">@color/white</item>
+		<item name="android:textColorHint">@color/gray</item>
+
+	</style>
+
+	<!-- Buttons -->
+	<style name="LoginButtinStyle">
+	</style>
+
+	<style name="Dialog_Dark" parent="Theme.AppCompat.Dialog">
+		<item name="colorAccent">@color/accent</item>
+		<item name="android:textColorPrimary">@color/gray</item>
+		<item name="android:background">@color/primary</item>
+	</style>
+
+	<style name="keyboard_animation">
+		<item name="android:windowEnterAnimation">@anim/slide_in</item>
+		<item name="android:windowExitAnimation">@anim/slide_out</item>
+	</style>
+
+
+</resources>
