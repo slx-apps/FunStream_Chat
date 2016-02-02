@@ -32,6 +32,7 @@ public class PrefUtils {
 
 	public static final String PREFS_AWAKE = "chat.awake";
 	public static final String PREFS_SCROLL = "chat.scroll";
+	public static final String PREFS_SMILEY = "chat.smiley";
 	public static final String PREFS_FIRST = "first_time";
 
 	public static final String PREFS_SHOW_CHAT = "chat.show";
@@ -39,6 +40,8 @@ public class PrefUtils {
 	public static final String PREFS_SHOW_IMAGES = "chat.images";
 
 	public static final String PREFS_OAUTH_CODE = "user.code";
+
+	public static final String PREFS_LAST_SELECTED_CATEGORY = "streams.last_category";
 
 	private final SharedPreferences prefs;
 
@@ -118,6 +121,18 @@ public class PrefUtils {
 				.apply();
 	}
 
+
+	public int getLastSelectedCategory(){
+		return prefs.getInt(PREFS_LAST_SELECTED_CATEGORY, 1);
+
+	}
+
+	public void setLastSelectedCategory(int categoryId){
+		prefs.edit()
+				.putInt(PREFS_LAST_SELECTED_CATEGORY, categoryId)
+				.apply();
+	}
+
 	public void clearUser() {
 		prefs.edit()
 		.remove(PREFS_USERNAME)
@@ -134,5 +149,9 @@ public class PrefUtils {
 
 	public boolean isShowImages() {
 		return prefs.getBoolean(PREFS_SHOW_IMAGES, false);
+	}
+
+	public boolean isShowSmileys() {
+		return prefs.getBoolean(PREFS_SMILEY, true);
 	}
 }

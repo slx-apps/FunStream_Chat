@@ -27,16 +27,33 @@
                 android:paddingRight="@dimen/spacing_small"
                 android:paddingBottom="@dimen/spacing_small">
 
-    <com.marshalchen.ultimaterecyclerview.UltimateRecyclerView
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/rvChat"
-        app:recyclerviewClipToPadding="true"
-        app:recyclerviewPadding="4dp"
-        android:visibility="invisible"
-        android:layout_above="@+id/chat_controls"
-        >
-    </com.marshalchen.ultimaterecyclerview.UltimateRecyclerView>
+        android:layout_height="wrap_content"
+        android:id="@+id/chat_layout"
+        android:visibility="visible"
+        android:layout_alignParentTop="true"
+        android:layout_above="@+id/chat_controls">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvChat"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/tvUserList"
+            android:layout_gravity="right|top"
+            android:layout_margin="8dp"
+            android:drawableLeft="@drawable/ic_chat_users_black"
+            android:gravity="center"
+            android:textSize="@dimen/text_size_small"
+            android:textColor="@color/black"/>
+    </FrameLayout>
 
     <LinearLayout
         android:orientation="vertical"
@@ -46,7 +63,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="false"
         android:id="@+id/chat_controls"
-        android:visibility="invisible"
+        android:visibility="visible"
         android:layout_alignParentRight="true">
 <!--
         <Button
@@ -65,7 +82,7 @@
             android:singleLine="true"
             android:gravity="center"
             android:background="@drawable/to_background"
-            android:paddingLeft="@dimen/spacing_smallest"
+            android:paddingLeft="@dimen/spacing_small"
             android:textColor="#fff"
             android:visibility="gone"
             android:layout_marginBottom="4dp"
@@ -79,15 +96,19 @@
             android:visibility="gone">
 
             <EditText
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:id="@+id/etNewMessage"
                 android:visibility="visible"
                 android:layout_weight="1"
                 android:inputType="text"
                 android:imeOptions="actionDone"
                 android:maxLines="1"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:background="@drawable/chat_publish_background"
+                android:paddingLeft="@dimen/spacing_small"
+                android:paddingRight="@dimen/spacing_small"
+                />
 
             <ImageButton
 	            android:layout_width="wrap_content"
@@ -96,7 +117,7 @@
 	            android:src="@drawable/ic_insert_emoticon_white_36dp"
 	            android:visibility="visible"
                 android:clickable="false"
-                android:background="@drawable/buttons_chat"
+                android:background="@drawable/selector_button_dark"
 	            android:layout_marginLeft="@dimen/spacing_smallest"
 	            android:padding="@dimen/spacing_smallest"/>
 
@@ -106,7 +127,7 @@
                 android:id="@+id/sendMessage"
                 android:src="@drawable/ic_send_white_36dp"
                 android:visibility="visible"
-                android:background="@drawable/buttons_chat"
+                android:background="@drawable/selector_button_dark"
                 android:layout_marginLeft="@dimen/spacing_smallest"
                 android:padding="@dimen/spacing_smallest"/>
         </LinearLayout>

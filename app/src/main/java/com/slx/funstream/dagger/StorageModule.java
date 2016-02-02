@@ -58,9 +58,9 @@ public class StorageModule {
 	@PerApp
 	Gson provideGson() {
 		Type listStreamType = new TypeToken<List<Stream>>() {}.getType();
-		Type smilesType = new TypeToken<List<Map<String, Smile>>>() {}.getType();
+		Type smilesType = new TypeToken<Map<String, Smile>>() {}.getType();
 		return new GsonBuilder()
-			.serializeNulls()
+			//.serializeNulls()
 			.registerTypeAdapter(listStreamType, new FunstreamDeserializer<List<Stream>>())
 			.registerTypeAdapter(smilesType, new SmileDeserializer())
 			.registerTypeAdapter(ChatResponse.class, new ChatResponseDeserializer())

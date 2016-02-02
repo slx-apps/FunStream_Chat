@@ -23,6 +23,7 @@ import android.graphics.Rect;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.AppCompatPopupWindow;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,7 +33,6 @@ import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.ImageButton;
-import android.widget.PopupWindow;
 
 import com.slx.funstream.R;
 import com.slx.funstream.chat.SmileRepo;
@@ -41,9 +41,7 @@ import com.slx.funstream.ui.chat.SmileGridView.OnSmileClickListener;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import hugo.weaving.DebugLog;
 
@@ -56,8 +54,8 @@ import hugo.weaving.DebugLog;
  *
  */
 
-public class SmileKeyboard extends PopupWindow {
-
+public class SmileKeyboard extends AppCompatPopupWindow {
+	private static final int MAX_TABS = 9;
 	private final SmileRepo smileRepo;
 	Context context;
 	private WeakReference<View> contentRoot;
@@ -72,7 +70,7 @@ public class SmileKeyboard extends PopupWindow {
 
 	@DebugLog
 	public SmileKeyboard(Context context, View contentRoot, SmileRepo smileRepo) {
-		super(context);
+		super(context, null, 0);
 		this.context = context;
 		this.contentRoot = new WeakReference<>(contentRoot);
 		this.smileRepo = smileRepo;
@@ -86,7 +84,7 @@ public class SmileKeyboard extends PopupWindow {
 
 	private View createView() {
 		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-		View view = inflater.inflate(R.layout.popup_smile_keyboard, null, false);
+		View view = inflater.inflate(R.layout.popup_smile_keyboard, null);
 		TabLayout smileTablayout = (TabLayout) view.findViewById(R.id.smile_tablayout);
 		ViewPager smilePager = (ViewPager) view.findViewById(R.id.smile_pager);
 		ImageButton ibBackspace = (ImageButton) view.findViewById(R.id.ibBackspace);
@@ -99,19 +97,30 @@ public class SmileKeyboard extends PopupWindow {
 		});
 
 		List<SmileGridView> pagersGridViews = new ArrayList<>();
-		for(Map<String, Smile> map : smileRepo.getSmiles()){
-			pagersGridViews.add(new SmileGridView(context, Collections.list(Collections.enumeration(map.values())), this));
+		List<List<Smile>> tabs = new ArrayList<>();
+		//create tabs
+		for (int i = 0; i <= MAX_TABS; i++) {
+			tabs.add(i, new ArrayList<>());
 		}
+		// populate tabs
+		for(Smile smiley : smileRepo.getSmiles().values()){
+			tabs.get(smiley.getTab()).add(smiley);
+		}
+		for(List<Smile> tab : tabs){
+				pagersGridViews.add(new SmileGridView(context, tab, this));
+		}
+
 		SmileTabPagerAdapter mSmileTabAdapter = new SmileTabPagerAdapter(pagersGridViews);
 
 
 		smilePager.setAdapter(mSmileTabAdapter);
 		smileTablayout.setupWithViewPager(smilePager);
-		smileTablayout.setTabMode(TabLayout.MODE_FIXED);
+		smileTablayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 		smileTablayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
 		return view;
 	}
+
 
 //	public void updateKeyboardPager(List<Map<String, Smile>> smilesList){
 //		List<SmileGridView> pagersGridViews = new ArrayList<>();
@@ -135,6 +144,7 @@ public class SmileKeyboard extends PopupWindow {
 	public void showAtBottom(){
 		showAtLocation(contentRoot.get(), Gravity.BOTTOM, 0, 0);
 	}
+
 	public void showAtBottomPending(){
 		if(isKeyBoardOpen())
 			showAtBottom();

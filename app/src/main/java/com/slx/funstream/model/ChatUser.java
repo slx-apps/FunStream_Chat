@@ -20,7 +20,7 @@ package com.slx.funstream.model;
 public class ChatUser {
 	long id;
 	String name;
-	int namecolor;
+	//int namecolor;
 
 	public long getId() {
 		return id;
@@ -28,10 +28,6 @@ public class ChatUser {
 
 	public String getName() {
 		return name;
-	}
-
-	public int getNamecolor() {
-		return namecolor;
 	}
 
 	public ChatUser(long id) {
@@ -42,11 +38,5 @@ public class ChatUser {
 	public ChatUser(long id, String name) {
 		this.id = id;
 		this.name = name;
-	}
-
-	public ChatUser(long id, String name, int namecolor) {
-		this.id = id;
-		this.name = name;
-		this.namecolor = namecolor;
 	}
 }

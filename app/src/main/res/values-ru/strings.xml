@@ -23,8 +23,8 @@
   <string name="activity_login_prompt_username">Логин sc2tv</string>
   <string name="activity_stream">Чат</string>
   <string name="activity_streams">Стримы</string>
-  <string name="error_loading_action">Ещё раз</string>
-  <string name="error_login">Проблемы с логином</string>
+  <string name="error_loading_action">Повторить</string>
+  <string name="error_login">Ошибка аутентификации</string>
   <string name="error_no_connection">Нет соединения</string>
   <string name="error_password_required">Пароль обязателен</string>
   <string name="error_stream_loading">Не удалось загрузить стрим</string>
@@ -32,7 +32,6 @@
   <string name="error_username_required">Логин обязателен</string>
   <string name="log_in">Войти</string>
   <string name="log_in_error">Логин или пароль неверен</string>
-  <string name="main">Main</string>
   <string name="prefs_category_title_chat">Настройки чата</string>
   <string name="search">Поиск</string>
   <string name="stream_reload">Перезагрузить</string>
@@ -45,7 +44,7 @@
   <string name="intro_streamer_message_text">Сообщения стримеру</string>
   <string name="prefs_chat_awake_summary">Не выключать подсветку чата</string>
   <string name="prefs_chat_awake">Подсветка</string>
-  <string name="prefs_chat_scroll_summary">Скролить чат к новым сообщениям</string>
+  <string name="prefs_chat_scroll_summary">Автоматически скролить чат к новым сообщениям</string>
   <string name="prefs_chat_scroll">Скролл чата</string>
   <string name="chat_connect">Соединение …</string>
   <string name="chat_connect_error">Ошибка соединения</string>
@@ -58,9 +57,20 @@
   <string name="log_in_from_site_desc">* Используя OAuth Вы вводите логин и пароль на сайте, а не в приложение</string>
   <string name="tab_title_channels">Каналы</string>
   <string name="tab_title_streams">Стримы</string>
-  <string name="search_query_hint">Имя стримера</string>
+  <string name="search_query_hint">Имя стримера или название канала</string>
   <string name="dialog_login_pending">Аутентификация …</string>
   <string name="prefs_chat_images">Показывать изображения</string>
   <string name="prefs_chat_images_summary">Разрешить показывать изображения из чата</string>
   <string name="refresh">Обновить</string>
+  <string name="dialog_users_title">Пользователи:</string>
+  <string name="error_chat_history">Ошибка получения истории сообщений</string>
+  <string name="error_chat_join">Ошибка соеднинения с каналом</string>
+  <string name="error_chat_leave">Ошибка отсоединения от канала</string>
+  <string name="error_chat_login">Ошибка аутентификации</string>
+  <string name="error_chat_send_message">Ошибка отправки сообщения</string>
+  <string name="error_chat_user_list">Ошибка получения списка пользователей</string>
+  <string name="category_top">Топ</string>
+  <string name="prefs_chat_smiley">Показывать смайлы</string>
+  <string name="prefs_chat_smiley_summary">Показывать смайлы в чате</string>
+  <string name="tab_title_favorites">Избранное</string>
 </resources>

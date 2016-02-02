@@ -54,17 +54,14 @@ public class SmileGridView {
 
 
 		SmileAdapter mAdapter = new SmileAdapter(context, smiles);
-		mAdapter.setSmileClickListener(new OnSmileClickListener() {
-			@Override
-			public void onSmileClicked(Smile smile) {
-				if (smileKeyboard.onSmileClickListener != null) {
-					smileKeyboard.onSmileClickListener.onSmileClicked(smile);
-				}
-				// Add to recents ?
+		mAdapter.setSmileClickListener(smile -> {
+			if (smileKeyboard.onSmileClickListener != null) {
+				smileKeyboard.onSmileClickListener.onSmileClicked(smile);
+			}
+			// Add to recents ?
 //				if (mRecents != null) {
 //					mRecents.addRecentSmile(rootView.getContext(), smile);
 //				}
-			}
 		});
 		gridView.setAdapter(mAdapter);
 	}

@@ -25,7 +25,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.marshalchen.ultimaterecyclerview.UltimateViewAdapter;
 import com.slx.funstream.R;
 import com.slx.funstream.model.Stream;
 import com.squareup.picasso.Picasso;
@@ -36,7 +35,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class StreamsAdapter extends UltimateViewAdapter implements View.OnClickListener {
+public class StreamsAdapter extends RecyclerView.Adapter<StreamsAdapter.ViewHolder> implements View.OnClickListener {
 	private final Picasso picasso;
 	private OnChatChannelClick mOnChatChannelClickCallback;
 	private List<Stream> streams = new ArrayList<>();
@@ -47,18 +46,18 @@ public class StreamsAdapter extends UltimateViewAdapter implements View.OnClickL
 	}
 
 	@Override
-	public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+	public void onBindViewHolder(ViewHolder holder, int position) {
 
 		final Stream stream = streams.get(position);
-		((ViewHolder) holder).bind(stream);
+		holder.bind(stream);
 		// Set Stream title
-		((ViewHolder) holder).setName();
+		holder.setName();
 		// Set Streamer name
-		((ViewHolder) holder).setStreamer();
+		holder.setStreamer();
 		// Set rating
-		((ViewHolder) holder).setRating();
+		holder.setRating();
 		// Set adult
-		((ViewHolder) holder).setAdult();
+		holder.setAdult();
 
 		// TODO change after fix 18+
 		// Set Stream preview image
@@ -69,41 +68,25 @@ public class StreamsAdapter extends UltimateViewAdapter implements View.OnClickL
 //			.resizeDimen(R.dimen.row_card_width, R.dimen.row_image_height)
 //			.centerCrop()
 ////				.transform(new RoundedTransformation(100, 0))
-//		.into(((ViewHolder) holder).ivStreamImage);
+//		.into(holder.ivStreamImage);
 
-//		((ViewHolder) holder).setDesc();
+//		holder.setDesc();
 
-		((ViewHolder) holder).contentRoot.setTag(holder);
+		holder.contentRoot.setTag(holder);
 	}
 
 	@Override
-	public UltimateRecyclerviewViewHolder onCreateViewHolder(ViewGroup parent) {
+	public int getItemCount() {
+		return streams == null ? 0 : streams.size();
+	}
+
+	@Override
+	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 		final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_stream, parent, false);
 		final ViewHolder streamViewHolder = new ViewHolder(view);
 		streamViewHolder.contentRoot.setOnClickListener(this);
 		return streamViewHolder;
 	}
-
-	@Override
-	public RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup viewGroup) {
-		return null;
-	}
-
-	@Override
-	public void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder, int i) {
-		//
-	}
-
-	@Override
-	public int getAdapterItemCount() {
-		return streams == null ? 0 : streams.size();
-	}
-
-	@Override
-	public long generateHeaderId(int i) {
-		return 0;
-	}
-
 
 	@Override
 	public void onClick(View view) {
@@ -123,7 +106,7 @@ public class StreamsAdapter extends UltimateViewAdapter implements View.OnClickL
 		this.notifyDataSetChanged();
 	}
 
-	class ViewHolder extends UltimateRecyclerviewViewHolder {
+	class ViewHolder extends RecyclerView.ViewHolder {
 		@Bind(R.id.tvName)
 		TextView tvName;
 		@Bind(R.id.tvStreamer)

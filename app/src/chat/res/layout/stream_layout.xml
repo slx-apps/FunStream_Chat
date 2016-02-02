@@ -15,28 +15,24 @@
   ~   limitations under the License.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/stream_root">
 
+
     <include
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        layout="@layout/toolbar_merge"
-        android:id="@+id/toolbar"
-        android:layout_alignParentTop="true"/>
+        layout="@layout/appbar"
+        />
 
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/chat_container"
-        android:layout_alignParentLeft="false"
-        android:layout_alignParentStart="false"
-        android:layout_alignParentBottom="false"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/toolbar">
+        android:id="@+id/chat_container">
     </FrameLayout>
 
-</RelativeLayout>
+</LinearLayout>

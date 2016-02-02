@@ -57,6 +57,8 @@ public final class ChatApiUtils {
 	public static final String CHAT_EVENT_USER_JOINED = "/chat/user/join";
 	public static final String CHAT_EVENT_USER_LEAVED = "/chat/user/leave";
 
+	public static final String CHAT_USER_LIST = "/chat/channel/list";
+
 	public static final int DEFAULT_AMOUNT_MESSAGES = 100;
 //	public static final String DEFAULT_DIRECTION_MESSAGES = "up";
 

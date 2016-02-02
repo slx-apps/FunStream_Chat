@@ -26,7 +26,11 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
+import com.slx.funstream.auth.UserStore.UserStoreListener;
 import com.slx.funstream.dagger.Injector;
+import com.slx.funstream.model.ChatChannelRequest;
+import com.slx.funstream.model.ChatHistoryRequest;
+import com.slx.funstream.model.ChatListResponse;
 import com.slx.funstream.model.ChatMessage;
 import com.slx.funstream.model.ChatResponse;
 import com.slx.funstream.rest.APIUtils;
@@ -35,20 +39,30 @@ import com.slx.funstream.utils.ChatMessageComparator;
 import com.slx.funstream.utils.LogUtils;
 import com.slx.funstream.utils.PrefUtils;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import hugo.weaving.DebugLog;
 import io.socket.client.Ack;
@@ -56,13 +70,13 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import io.socket.engineio.client.transports.WebSocket;
+import rx.Observable;
+import rx.Subscriber;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
 
-import static com.slx.funstream.chat.ChatApiUtils.CHANNEL_ADMIN;
-import static com.slx.funstream.chat.ChatApiUtils.CHANNEL_MAIN;
-import static com.slx.funstream.chat.ChatApiUtils.CHAT_CHANNEL;
-import static com.slx.funstream.chat.ChatApiUtils.CHAT_CHANNEL_ADMIN;
-import static com.slx.funstream.chat.ChatApiUtils.CHAT_CHANNEL_MAIN;
-import static com.slx.funstream.chat.ChatApiUtils.CHAT_CHANNEL_STREAM;
 import static com.slx.funstream.chat.ChatApiUtils.CHAT_EVENT_JOIN;
 import static com.slx.funstream.chat.ChatApiUtils.CHAT_EVENT_LEAVE;
 import static com.slx.funstream.chat.ChatApiUtils.CHAT_EVENT_LOGIN;
@@ -81,7 +95,7 @@ public class ChatService extends Service implements ChatServiceInterface {
 
 	private List<FunstreamChatEventsListener> listeners = new ArrayList<>();
 	private LocalBinder mLocalBinder = new LocalBinder();
-	private List<ChatMessage> mMessages = new ArrayList<>();
+	private List<ChatMessage> mMessages = new CopyOnWriteArrayList<>();
 	private long currChannelId = DEFAULT_CHANNEL_ID;
 	private String mToken;
 
@@ -92,6 +106,9 @@ public class ChatService extends Service implements ChatServiceInterface {
 	@Inject
 	Gson gson;
 
+	PublishSubject<String> chatMessages = PublishSubject.create();
+	Subscription messageSub;
+	Subscription checkUserList;
 	@DebugLog
 	@Override
 	public void onCreate() {
@@ -99,52 +116,52 @@ public class ChatService extends Service implements ChatServiceInterface {
 
 		Injector.INSTANCE.getApplicationComponent().inject(this);
 
-		// Obtain sslcontext
+//		// Obtain sslcontext
+//		SSLContext sslContext = null;
+//		try {
+//			sslContext = createSSLContext();
+//		} catch (GeneralSecurityException e) {
+//			Log.e(LogUtils.TAG, e.toString());
+//			e.printStackTrace();
+//		}
+
+
+
 		SSLContext sslContext = null;
+		TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+				return new java.security.cert.X509Certificate[]{};
+			}
+
+			public void checkClientTrusted(X509Certificate[] chain,
+			                               String authType) throws CertificateException {
+			}
+
+			public void checkServerTrusted(X509Certificate[] chain,
+			                               String authType) throws CertificateException {
+			}
+		}};
+
+		KeyManager[] keyManager = null;
 		try {
-			sslContext = createSSLContext();
-		} catch (GeneralSecurityException e) {
-			Log.e(LogUtils.TAG, e.toString());
+			final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+			KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+			factory.init(keyStore, null);
+			keyManager = factory.getKeyManagers();
+		} catch (NoSuchAlgorithmException | UnrecoverableKeyException | KeyStoreException e) {
 			e.printStackTrace();
 		}
 
+		try {
+			sslContext = SSLContext.getInstance("TLS");
+			sslContext.init(keyManager, trustAllCerts, new java.security.SecureRandom());
+			//HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
-
-//		SSLContext sslContext = null;
-//		TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
-//			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-//				return new java.security.cert.X509Certificate[]{};
-//			}
-//
-//			public void checkClientTrusted(X509Certificate[] chain,
-//			                               String authType) throws CertificateException {
-//			}
-//
-//			public void checkServerTrusted(X509Certificate[] chain,
-//			                               String authType) throws CertificateException {
-//			}
-//		}};
-//
-//		KeyManager[] keyManager = null;
-//		try {
-//			final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-//			KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-//			factory.init(keyStore, null);
-//			keyManager = factory.getKeyManagers();
-//		} catch (NoSuchAlgorithmException | UnrecoverableKeyException | KeyStoreException e) {
-//			e.printStackTrace();
-//		}
-//
-//		try {
-//			sslContext = SSLContext.getInstance("TLS");
-//			sslContext.init(keyManager, trustAllCerts, new java.security.SecureRandom());
-//			//HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-
-//		IO.setDefaultSSLContext(sslContext);
-//		IO.setDefaultHostnameVerifier((s, sslSession) -> true);
+		IO.setDefaultSSLContext(sslContext);
+		IO.setDefaultHostnameVerifier((s, sslSession) -> true);
 
 		// Create connection options
 		opts = new IO.Options();
@@ -152,6 +169,37 @@ public class ChatService extends Service implements ChatServiceInterface {
 		opts.secure = true;
 		opts.sslContext = sslContext;
 		opts.forceNew = true;
+		messageSub = chatMessages
+				.map(jsonString -> gson.fromJson(jsonString, ChatMessage.class))
+				// TODO fix duplicate message workaround
+				// В данный момент из-за синхронизации и нек-х упрощений со стороны сервера,
+				// на каждое сообщение может приходить 2 таких события с одинаковыми данными.
+				// Для защиты от дубликатов фильтруйте данные по идентификатору сообщения.
+				// После правки способа синхронизации с чатом ск2тв эта проблема пропадёт.
+				.filter(message -> message.getType().equals(TYPE_MESSAGE) && !mMessages.contains(message))
+				.subscribeOn(Schedulers.io())
+				.observeOn(AndroidSchedulers.mainThread())
+				.subscribe(
+					new Subscriber<ChatMessage>() {
+						@Override
+						public void onCompleted() {
+							Log.i(LogUtils.TAG, "chatMessages onCompleted");
+						}
+
+						@Override
+						public void onError(Throwable e) {
+							Log.e(LogUtils.TAG, e.toString());
+						}
+
+						@Override
+						public void onNext(ChatMessage chatMessage) {
+							mMessages.add(chatMessage);
+							notifyListenersNewMessage();
+						}
+					});
+
+		userStore.registerUserStoreListener(userStoreListener);
+
 	}
 
 
@@ -214,9 +262,16 @@ public class ChatService extends Service implements ChatServiceInterface {
 
 		connectChat();
 		joinChannel(currChannelId);
-		if(userStore.isUserValid(false)){
-			mToken = userStore.getCurrUser().getToken();
-			loginChat(mToken);
+		if(checkUserList != null && !checkUserList.isUnsubscribed()){
+			checkUserList.unsubscribe();
+		}
+		checkUserList = Observable
+				.interval(0, 2, TimeUnit.MINUTES)
+				.subscribe(aLong -> getUserIds(currChannelId));
+
+		if(userStore.isUserLoggedIn()){
+			mToken = userStore.getCurrentUser().getToken();
+			loginChat();
 		}
 
 		return START_NOT_STICKY;
@@ -231,7 +286,16 @@ public class ChatService extends Service implements ChatServiceInterface {
 	@Override
 	public void onDestroy() {
 		Log.i(LogUtils.TAG, "ChatService->onDestroy");
+		userStore.unregisterUserStoreListener(userStoreListener);
 		disconnectChat();
+		if(messageSub != null && !messageSub.isUnsubscribed()){
+
+			messageSub.unsubscribe();
+		}
+		if(checkUserList != null && !checkUserList.isUnsubscribed()){
+			checkUserList.unsubscribe();
+		}
+
 	}
 
 	public class LocalBinder extends Binder {
@@ -313,16 +377,9 @@ public class ChatService extends Service implements ChatServiceInterface {
 		currChannelId = chan;
 		if(mSocket == null) return;
 
-		JSONObject channel = new JSONObject();
 		try {
-			if (currChannelId == -1) {
-				channel.put(CHAT_CHANNEL, CHAT_CHANNEL_MAIN);
-			} else if (currChannelId == -2) {
-				channel.put(CHAT_CHANNEL, CHAT_CHANNEL_ADMIN);
-			} else {
-				channel.put(CHAT_CHANNEL, CHAT_CHANNEL_STREAM + currChannelId);
-			}
-			mSocket.emit(CHAT_EVENT_JOIN, channel, (Ack) args -> {
+			JSONObject join = new JSONObject(gson.toJson(new ChatChannelRequest(chan)));
+			mSocket.emit(CHAT_EVENT_JOIN, join, (Ack) args -> {
 				ChatResponse chatResponse = gson.fromJson(args[0].toString(), ChatResponse.class);
 				if(chatResponse.getStatus().equals(APIUtils.ERROR_STATUS)){
 					notifyListenersError(chatResponse.getResult().getMessage());
@@ -330,61 +387,43 @@ public class ChatService extends Service implements ChatServiceInterface {
 					loadChatMessages(currChannelId);
 				}
 			});
-		}catch (JSONException e) {
-			notifyListenersError(e.toString());
+		} catch (JSONException e) {
+			notifyListenersError(getString(R.string.error_chat_join));
 		}
 	}
 
 	private void loadChatMessages(long channel){
-//		ChatHistoryRequest chatHistoryRequest = new ChatHistoryRequest();
-//		chatHistoryRequest.setChannel(CHAT_CHANNEL_STREAM+channel);
-//		chatHistoryRequest.setId(null);
-//		chatHistoryRequest.setAmount(DEFAULT_AMOUNT_MESSAGES);
-//		chatHistoryRequest.setDirection(DEFAULT_DIRECTION_MESSAGES);
-//		String req = gson.toJson(chatHistoryRequest);
+		ChatHistoryRequest chatHistoryRequest = new ChatHistoryRequest();
+		chatHistoryRequest.setAmount(DEFAULT_AMOUNT_MESSAGES);
+		chatHistoryRequest.setChannel(channel);
+		String req = gson.toJson(chatHistoryRequest);
 
-		JSONObject history = new JSONObject();
 		try {
-			if(channel == CHANNEL_MAIN){
-				history.put("channel", CHAT_CHANNEL_MAIN);
-			} else if (channel == CHANNEL_ADMIN){
-				history.put("channel", CHAT_CHANNEL_ADMIN);
-			} else{
-				history.put("channel", CHAT_CHANNEL_STREAM + channel);
-			}
-
-			history.put("amount", DEFAULT_AMOUNT_MESSAGES);
-			//history.put("direction", DEFAULT_DIRECTION_MESSAGES);
-
-			JSONObject query = new JSONObject();
-			JSONArray conditions = new JSONArray();
-			JSONArray groups = new JSONArray();
-			query.put("glue", "and");
-			query.put("conditions", conditions);
-			query.put("groups", groups);
-			history.put("query", query);
-		}catch (JSONException e) {
-			notifyListenersError(e.toString());
+			mSocket.emit(CHAT_HISTORY,  new JSONObject(req), (Ack) args -> {
+				//TODO ret message
+				clearMessages();
+				convertMessages(String.valueOf(args[0]));
+			});
+		} catch (JSONException e) {
+			Log.e(LogUtils.TAG, e.toString());
+			notifyListenersError(getString(R.string.error_chat_history));
 		}
-
-		mSocket.emit(CHAT_HISTORY, history, (Ack) args -> {
-			//TODO ret message
-			clearMessages();
-			convertMessages(String.valueOf(args[0]));
-		});
 	}
 
 	public void leaveChannel(long channelId){
-		JSONObject channel = new JSONObject();
 		try {
-			if (channelId == -1) {
-				channel.put(CHAT_CHANNEL, CHAT_CHANNEL_MAIN);
-			} else {
-				channel.put(CHAT_CHANNEL, CHAT_CHANNEL_STREAM + channelId);
-			}
-			mSocket.emit(CHAT_EVENT_LEAVE, channel, (Ack) args -> clearMessages());
+			JSONObject leave = new JSONObject(gson.toJson(new ChatChannelRequest(channelId)));
+			mSocket.emit(CHAT_EVENT_LEAVE, leave, (Ack) args -> {
+				ChatResponse chatResponse = gson.fromJson(args[0].toString(), ChatResponse.class);
+				if(chatResponse.getStatus().equals(APIUtils.ERROR_STATUS)){
+					notifyListenersError(chatResponse.getResult().getMessage());
+				}else{
+					loadChatMessages(currChannelId);
+				}
+			});
 		} catch (JSONException e) {
-			notifyListenersError(e.toString());
+			Log.e(LogUtils.TAG, e.toString());
+			notifyListenersError(getString(R.string.error_chat_leave));
 		}
 	}
 
@@ -402,20 +441,26 @@ public class ChatService extends Service implements ChatServiceInterface {
 	}
 
 	@DebugLog
-	public void sendMessage(ChatMessage newMessage) throws JSONException {
-//		gson.toJson(newMessage)
+	public void sendMessage(ChatMessage newMessage) {
 		if(mSocket == null) return;
-		mSocket.emit(CHAT_EVENT_NEW_MESSAGE, makeNewMessage(newMessage), (Ack) args -> {
-				ChatResponse chatResponse = gson.fromJson(args[0].toString(), ChatResponse.class);
-				if(chatResponse.getStatus().equals(APIUtils.ERROR_STATUS)){
-					notifyListenersError(chatResponse.getResult().getMessage());
-				}
-		});
+		try {
+			mSocket.emit(CHAT_EVENT_NEW_MESSAGE, new JSONObject(gson.toJson(newMessage)), (Ack) args -> {
+					ChatResponse chatResponse = gson.fromJson(args[0].toString(), ChatResponse.class);
+					if(chatResponse.getStatus().equals(APIUtils.ERROR_STATUS)){
+						notifyListenersError(chatResponse.getResult().getMessage());
+					}
+			});
+		} catch (JSONException e) {
+			Log.e(LogUtils.TAG, e.toString());
+			notifyListenersError(getString(R.string.error_chat_send_message));
+		}
 	}
 	@DebugLog
-	public void loginChat(String token){
-		if(mSocket == null) return;
-		mToken = token;
+	public void loginChat(){
+		if(userStore.isUserLoggedIn()){
+			mToken = userStore.getCurrentUser().getToken();
+		}
+		if(mSocket == null && mToken == null) return;
 		try {
 			JSONObject login = new JSONObject();
 			login.put(CHAT_LOGIN_TOKEN, mToken);
@@ -426,7 +471,8 @@ public class ChatService extends Service implements ChatServiceInterface {
 				}
 			});
 		} catch (JSONException e) {
-			notifyListenersError(e.toString());
+			Log.e(LogUtils.TAG, e.toString());
+			notifyListenersError(getString(R.string.error_chat_login));
 		}
 
 	}
@@ -437,17 +483,6 @@ public class ChatService extends Service implements ChatServiceInterface {
 
 	public int getChatMessagesSize(){
 		return mMessages.size();
-	}
-
-	private void addMessage(ChatMessage message) {
-		// TODO fix duplicate message workaround
-		// В данный момент из-за синхронизации и нек-х упрощений со стороны сервера,
-		// на каждое сообщение может приходить 2 таких события с одинаковыми данными.
-		// Для защиты от дубликатов фильтруйте данные по идентификатору сообщения.
-		// После правки способа синхронизации с чатом ск2тв эта проблема пропадёт.
-		if(!message.getType().equals(TYPE_MESSAGE)) return;
-		if(!mMessages.contains(message)) mMessages.add(message);
-		notifyListenersNewMessage();
 	}
 
 	private void removeMessage(ChatMessage removeMessage) {
@@ -461,7 +496,7 @@ public class ChatService extends Service implements ChatServiceInterface {
 	private void addMessages(List<ChatMessage> list) {
 		Collections.sort(list, new ChatMessageComparator());
 		mMessages.addAll(list);
-		notifyListenersEventwMessages();
+		notifyListenersEventMessages();
 	}
 
 	// Chat server events listeners
@@ -473,12 +508,8 @@ public class ChatService extends Service implements ChatServiceInterface {
 		}
 	};
 
-	private Emitter.Listener onNewMessage = new Emitter.Listener() {
-		@Override
-		public void call(final Object... args) {
-			final ChatMessage chatMessage = gson.fromJson(String.valueOf(args[0]), ChatMessage.class);
-			addMessage(chatMessage);
-		}
+	private Emitter.Listener onNewMessage = args -> {
+		chatMessages.onNext((String.valueOf(args[0])));
 	};
 
 	private Emitter.Listener onError = args -> {
@@ -507,7 +538,7 @@ public class ChatService extends Service implements ChatServiceInterface {
 			Log.i(LogUtils.TAG, "onReconnect");
 			notifyListenersServerMessage(getString(R.string.chat_reconnect));
 			joinChannel(currChannelId);
-			loginChat(mToken);
+			loginChat();
 		}
 	};
 
@@ -518,41 +549,26 @@ public class ChatService extends Service implements ChatServiceInterface {
 
 	private void clearMessages(){
 		mMessages.clear();
-		notifyListenersEventwMessages();
+		notifyListenersEventMessages();
 	}
 
-	/**
-	 * Convert {@link com.slx.funstream.model.ChatMessage} to JSONObject
-	 * @param newMessage Instance of ChatMessage
-	 * @return ChatMessage converted into JSONObject
-	 * @throws JSONException
-	 */
-	private static JSONObject makeNewMessage(ChatMessage newMessage) throws JSONException {
-		JSONObject jsonNewMessage = new JSONObject();
-		if (newMessage.getChannel().equals("stream/-1")){
-			jsonNewMessage.put("channel", CHAT_CHANNEL_MAIN);
+	public void getUserIds(Long channelId){
+		if(mSocket != null) {
+			try {
+				mSocket.emit(ChatApiUtils.CHAT_USER_LIST, new JSONObject(gson.toJson(new ChatChannelRequest(channelId))), (Ack) args -> {
+					ChatListResponse chatListResponse = gson.fromJson(args[0].toString(), ChatListResponse.class);
+					if(chatListResponse.getStatus().equals(APIUtils.ERROR_STATUS)){
+						notifyListenersError(chatListResponse.getResult().getMessage());
+					} else {
+						notifyListenersUserListLoaded(chatListResponse.getResult().getUsers());
+					}
+
+				});
+			} catch (JSONException e) {
+				Log.e(LogUtils.TAG, e.toString());
+				notifyListenersError(getString(R.string.error_chat_user_list));
+			}
 		}
-		else{
-			jsonNewMessage.put("channel", newMessage.getChannel());
-		}
-
-		JSONObject from = new JSONObject();
-		from.put("id", newMessage.getFrom().getId());
-		from.put("name", newMessage.getFrom().getName());
-
-		if(newMessage.getTo() != null){
-			JSONObject to = new JSONObject();
-			to.put("id", newMessage.getTo().getId());
-			to.put("name", newMessage.getTo().getName());
-			jsonNewMessage.put("to", to);
-		}else{
-			jsonNewMessage.put("to", newMessage.getTo());
-		}
-		jsonNewMessage.put("from", from);
-		jsonNewMessage.put("text", newMessage.getText());
-
-
-		return jsonNewMessage;
 	}
 
 	private void notifyListenersNewMessage(){
@@ -560,7 +576,7 @@ public class ChatService extends Service implements ChatServiceInterface {
 			listener.onNewMessage();
 		}
 	}
-	private void notifyListenersEventwMessages(){
+	private void notifyListenersEventMessages(){
 		for(FunstreamChatEventsListener listener : listeners){
 			listener.onEventMessages();
 		}
@@ -584,6 +600,12 @@ public class ChatService extends Service implements ChatServiceInterface {
 		}
 	}
 
+	private void notifyListenersUserListLoaded(Integer[] userIds){
+		for(FunstreamChatEventsListener listener : listeners){
+			listener.onUserListLoaded(userIds);
+		}
+	}
+
 	@DebugLog
 	public void addFunstreamChatEventsListener(FunstreamChatEventsListener listener) {
 		if(!this.listeners.contains(listener)){
@@ -604,4 +626,5 @@ public class ChatService extends Service implements ChatServiceInterface {
 		}
 	}
 
+	UserStoreListener userStoreListener = () -> loginChat();
 }

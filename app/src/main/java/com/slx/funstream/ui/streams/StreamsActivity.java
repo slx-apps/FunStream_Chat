@@ -35,22 +35,21 @@ import butterknife.ButterKnife;
 
 public class StreamsActivity extends AppCompatActivity {
 
-	@Bind(R.id.stream_toolbar)
+	@Bind(R.id.toolbar)
 	Toolbar toolbar;
-
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_streams);
 		ButterKnife.bind(this);
-
 //		if(prefUtils.isFirst()){
 //			prefUtils.setFirst();
 //			startActivity(new Intent(this, Intro.class));
 //		}
 
 		setSupportActionBar(toolbar);
+		//getSupportActionBar().setIcon(R.mipmap.ic_launcher);
 
 		FragmentManager fm = getSupportFragmentManager();
 		Fragment fragment = fm.findFragmentById(R.id.container);

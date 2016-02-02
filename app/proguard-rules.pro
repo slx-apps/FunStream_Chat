@@ -23,6 +23,19 @@
     public static int i(...);
     public static int e(...);
 }
+
+# Support design library
+-dontwarn android.support.design.**
+-keep class android.support.design.** { *; }
+-keep interface android.support.design.** { *; }
+-keep public class android.support.design.R$* { *; }
+-keep class android.support.v7.widget.**
+# Other support libraries
+-keep class android.support.v4.app.** { *; }
+-keep interface android.support.v4.app.** { *; }
+-keep class android.support.v7.app.** { *; }
+-keep interface android.support.v7.app.** { *; }
+
 #
 # Retrofit
 -dontwarn retrofit.**
@@ -73,11 +86,27 @@
 # Retrolambda
 -dontwarn java.lang.invoke.*
 
-# Rx
--dontwarn sun.misc.**
+# RxJava
+-dontwarn rx.internal.util.unsafe.**
+-keep class rx.schedulers.Schedulers {
+    public static <methods>;
+}
+-keep class rx.schedulers.ImmediateScheduler {
+    public <methods>;
+}
+-keep class rx.schedulers.TestScheduler {
+    public <methods>;
+}
+-keep class rx.schedulers.Schedulers {
+    public static ** test();
+}
 -keepclassmembers class rx.internal.util.unsafe.*ArrayQueue*Field* {
-   long producerIndex;
-   long consumerIndex;
+    long producerIndex;
+    long consumerIndex;
+}
+-keepclassmembers class rx.internal.util.unsafe.BaseLinkedQueueProducerNodeRef {
+    long producerNode;
+    long consumerNode;
 }
 
 -keepclassmembers class rx.internal.util.unsafe.BaseLinkedQueueProducerNodeRef {

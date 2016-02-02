@@ -22,7 +22,11 @@ import com.slx.funstream.model.Stream;
 import com.slx.funstream.rest.APIUtils;
 import com.slx.funstream.rest.model.AuthRequest;
 import com.slx.funstream.rest.model.AuthResponse;
+import com.slx.funstream.rest.model.Category;
+import com.slx.funstream.rest.model.CategoryRequest;
+import com.slx.funstream.rest.model.ChatListRequest;
 import com.slx.funstream.rest.model.ContentRequest;
+import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.rest.model.OAuthRequest;
 import com.slx.funstream.rest.model.OAuthResponse;
 import com.slx.funstream.rest.model.Smile;
@@ -33,8 +37,10 @@ import java.util.Map;
 import retrofit.Call;
 import retrofit.http.Body;
 import retrofit.http.GET;
+import retrofit.http.Header;
 import retrofit.http.Headers;
 import retrofit.http.POST;
+import rx.Observable;
 
 public interface FunstreamApiService {
 
@@ -43,10 +49,15 @@ public interface FunstreamApiService {
 	Call<List<Stream>> getContent(@Body ContentRequest contentRequest);
 	//{"content":"stream","type":"all","category":{"slug":"top"}}
 
+	// Categories
+	@Headers(APIUtils.HEADER_API_VERSION)
+	@POST(APIUtils.API_CATEGORY)
+	Observable<Category> getCategoriesWithSubs(@Body CategoryRequest categoryRequest);
+
 	//
-//	@Headers(APIUtils.HEADER_API_VERSION)
-//	@POST(APIUtils.API_CONTENT)
-//	Observable<List<Stream>> getContent(@Body ContentRequest contentRequest);
+	@Headers(APIUtils.HEADER_API_VERSION)
+	@POST(APIUtils.API_CONTENT)
+	Observable<List<Stream>> getContentObs(@Body ContentRequest contentRequest);
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.API_AUTH_LOGIN)
@@ -58,7 +69,7 @@ public interface FunstreamApiService {
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@GET(APIUtils.API_SMILE)
-	Call<List<Map<String, Smile>>> getSmiles();
+	Call<Map<String, Smile>> getSmiles();
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.API_USER)
@@ -68,11 +79,23 @@ public interface FunstreamApiService {
 	@POST(APIUtils.OAUTH_REQUEST)
 	Call<OAuthResponse> getPermissionCode(@Body OAuthRequest oAuthRequest);
 
-//	@Headers(APIUtils.HEADER_API_VERSION)
-//	@POST(APIUtils.OAUTH_REQUEST)
-//	Observable<OAuthResponse> getPermissionCode(@Body OAuthRequest oAuthRequest);
+	@Headers(APIUtils.HEADER_API_VERSION)
+	@POST(APIUtils.OAUTH_REQUEST)
+	Observable<OAuthResponse> getPermissionCodeObs(@Body OAuthRequest oAuthRequest);
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.OAUTH_EXCHANGE)
 	Call<OAuthResponse> getToken(@Body OAuthResponse response);
+
+	@Headers(APIUtils.HEADER_API_VERSION)
+	@POST(APIUtils.OAUTH_EXCHANGE)
+	Observable<OAuthResponse> getTokenObs(@Body OAuthResponse response);
+
+	@Headers(APIUtils.HEADER_API_VERSION)
+	@POST(APIUtils.API_IDS_TO_LIST)
+	Observable<ChatUser[]> getChatUsers(@Body ChatListRequest chatListRequest);
+
+	@Headers(APIUtils.HEADER_API_VERSION)
+	@POST(APIUtils.API_CURRENT_USER)
+	Observable<CurrentUser> getCurrentUser(@Header(APIUtils.HEADER_API_TOKEN) String token);
 }

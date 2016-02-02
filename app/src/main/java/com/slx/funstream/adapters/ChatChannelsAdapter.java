@@ -24,7 +24,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.marshalchen.ultimaterecyclerview.UltimateViewAdapter;
 import com.slx.funstream.R;
 import com.slx.funstream.adapters.StreamsAdapter.OnChatChannelClick;
 
@@ -33,8 +32,8 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class ChatChannelsAdapter extends UltimateViewAdapter implements
-		View.OnClickListener {
+public class ChatChannelsAdapter extends RecyclerView.Adapter<ChatChannelsAdapter.ViewHolder>
+		implements View.OnClickListener {
 	private List<String> channels;
 	private OnChatChannelClick mListener;
 
@@ -56,57 +55,42 @@ public class ChatChannelsAdapter extends UltimateViewAdapter implements
 	}
 
 	@Override
-	public UltimateRecyclerviewViewHolder onCreateViewHolder(ViewGroup parent) {
+	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 		final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_chat_channel, parent, false);
-		final ViewHolder streamViewHolder = new ViewHolder(view);
+		final ViewHolder streamViewHolder = new ViewHolder(view, true);
 		streamViewHolder.contentRoot.setOnClickListener(this);
 		return streamViewHolder;
 	}
 
 	@Override
-	public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+	public void onBindViewHolder(ViewHolder holder, int position) {
 		String channel = channels.get(position);
 
 		// Set Stream title
-		((ViewHolder) holder).tvName.setText(channel);
-		((ViewHolder) holder).contentRoot.setTag(holder);
+		holder.tvName.setText(channel);
+		holder.contentRoot.setTag(holder);
 
 //		switch (channel){
 //			case "support":
 //			case "private":
 //			case "notifications":
-//				((ViewHolder) holder).contentRoot.setEnabled(false);
-//				((ViewHolder) holder).tvName.setText(channel + " Coming soon");
+//				holder.contentRoot.setEnabled(false);
+//				holder.tvName.setText(channel + " Coming soon");
 //		}
 	}
 
 	@Override
-	public void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder, int i) {
-		//
+	public int getItemCount() {
+		return channels.size();
 	}
 
-	@Override
-	public RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup viewGroup) {
-		return null;
-	}
-
-	@Override
-	public int getAdapterItemCount() {
-		return channels == null ? 0 : channels.size();
-	}
-
-	@Override
-	public long generateHeaderId(int i) {
-		return 0;
-	}
-
-	class ViewHolder extends UltimateRecyclerviewViewHolder {
+	class ViewHolder extends RecyclerView.ViewHolder {
 		@Bind(R.id.tvName)
 		TextView tvName;
 		@Bind(R.id.contentRoot)
 		LinearLayout contentRoot;
 
-		public ViewHolder(View itemView) {
+		public ViewHolder(View itemView, boolean isItem) {
 			super(itemView);
 			ButterKnife.bind(this, itemView);
 		}

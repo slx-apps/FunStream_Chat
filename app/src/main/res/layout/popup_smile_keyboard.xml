@@ -31,14 +31,14 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:background="@color/primary"
-        style="@style/SmileTabsLight"/>
+        style="@style/SmileTabsLight" />
 
         <ImageButton
             android:layout_width="@dimen/keyboard_backspace_width"
             android:layout_height="match_parent"
             android:id="@+id/ibBackspace"
-            android:src="@drawable/abc_ic_ab_back_mtrl_am_alpha"
-            android:background="@color/primary"/>
+            android:src="@drawable/ic_arrow_back_dark"
+            android:background="@drawable/selector_button_dark"/>
     </LinearLayout>
 
     <android.support.v4.view.ViewPager

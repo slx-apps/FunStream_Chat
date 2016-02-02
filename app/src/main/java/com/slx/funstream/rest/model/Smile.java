@@ -17,77 +17,98 @@
 package com.slx.funstream.rest.model;
 
 
+import com.slx.funstream.model.ChatUser;
+
 public class Smile {
 	/*
-	    {
-            "code": "peka",
-            "image": "mini-happy.png?3",
-            "position":
-            usable: <bool> smile can be posted by user,
-            width: <int> width of the smile,
-            height: <int> height of the smile,
-        }
+	{
+	    "id": 1,
+	    "tab": 0,
+	    "position": 0,
+	    "width": 30,
+	    "height": 30,
+	    "code": "happy",
+	    "url": "https://funstream.tv/build/images/smiles/happy.png",
+	    "user": null,
+	    "level": 0
+	}
     */
 
-	String code;
-	String image;
+	int id;
+	int tab;
 //	int position;
-	Boolean usable;
-	Integer width;
-	Integer height;
+	int width;
+	int height;
+	String code;
+	String url;
+	int level;
+	ChatUser user;
 
-	public String getImage() {
-		return image;
+	public int getId() {
+		return id;
 	}
 
-	public void setImage(String image) {
-		this.image = image;
+	public int getTab() {
+		return tab;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public int getHeight() {
+		return height;
 	}
 
 	public String getCode() {
 		return code;
 	}
 
+	public String getUrl() {
+		return url;
+	}
+
+	public int getLevel() {
+		return level;
+	}
+
+	public ChatUser getUser() {
+		return user;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setTab(int tab) {
+		this.tab = tab;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
+	}
+
 	public void setCode(String code) {
 		this.code = code;
 	}
 
-	public Boolean getUsable() {
-		return usable;
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
-	public Integer getWidth() {
-		return width;
+	public void setLevel(int level) {
+		this.level = level;
 	}
 
-	public Integer getHeight() {
-		return height;
-	}
-
-	public void setUsable(Boolean usable) {
-		this.usable = usable;
-	}
-
-	public void setHeight(Integer height) {
-		this.height = height;
-	}
-
-	public void setWidth(Integer width) {
-		this.width = width;
+	public void setUser(ChatUser user) {
+		this.user = user;
 	}
 
 	public Smile() {
-	}
-
-//	public Smile(String code, String image, int position) {
-//		this.code = code;
-//		this.image = image;
-//		this.position = position;
-//	}
-
-	public Smile(String code, String image) {
-		this.code = code;
-		this.image = image;
 	}
 
 	@Override

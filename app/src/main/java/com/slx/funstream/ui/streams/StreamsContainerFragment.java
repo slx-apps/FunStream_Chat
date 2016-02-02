@@ -29,10 +29,13 @@ import android.view.ViewGroup;
 
 import com.slx.funstream.R;
 import com.slx.funstream.adapters.StreamListFragmentAdapter;
+import com.slx.funstream.auth.UserStore;
 import com.slx.funstream.dagger.Injector;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -44,10 +47,14 @@ public class StreamsContainerFragment extends Fragment {
 	@Bind(R.id.viewpager)
 	ViewPager viewpager;
 
+	@Inject
+	UserStore userStore;
+
 	private List<ChatTabItem> mTabs = new ArrayList<>();
 
 	public static final int TYPE_LIST_STREAMS = 0;
 	public static final int TYPE_LIST_CHANNELS = 1;
+	public static final int TYPE_LIST_FAVORITE = 2;
 	private StreamListFragmentAdapter mPagerAdapter;
 
 	public static List<String> sChannels = new ArrayList<>();
@@ -84,6 +91,7 @@ public class StreamsContainerFragment extends Fragment {
 
 		mTabs.add(new ChatTabItem(getString(R.string.tab_title_streams), TYPE_LIST_STREAMS));
 		mTabs.add(new ChatTabItem(getString(R.string.tab_title_channels), TYPE_LIST_CHANNELS));
+		//if(userStore.isUserLoggedIn()) mTabs.add(new ChatTabItem(getString(R.string.tab_title_favorites), TYPE_LIST_FAVORITE));
 
 
 		mPagerAdapter = new StreamListFragmentAdapter(getChildFragmentManager(), mTabs);
@@ -111,6 +119,7 @@ public class StreamsContainerFragment extends Fragment {
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 		viewpager.setAdapter(mPagerAdapter);
 		tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+		tabLayout.setTabMode(TabLayout.MODE_FIXED);
 		tabLayout.setupWithViewPager(viewpager);
 		//initializeFilterBox();
 	}

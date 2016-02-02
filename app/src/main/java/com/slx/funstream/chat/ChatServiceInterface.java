@@ -29,7 +29,7 @@ public interface ChatServiceInterface {
 	void joinChannel(long channel);
 	void leaveChannel(long channel);
 	void sendMessage(ChatMessage newMessage) throws JSONException;
-	void loginChat(String token);
+	void loginChat();
 	List<ChatMessage> getChatMessages();
 	int getChatMessagesSize();
 	void addFunstreamChatEventsListener(FunstreamChatEventsListener listener);

@@ -21,6 +21,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.Spanned;
@@ -34,13 +35,12 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.marshalchen.ultimaterecyclerview.UltimateViewAdapter;
 import com.slx.funstream.R;
+import com.slx.funstream.auth.UserStore;
 import com.slx.funstream.chat.SmileRepo;
 import com.slx.funstream.dagger.Injector;
 import com.slx.funstream.model.ChatMessage;
 import com.slx.funstream.model.ChatUser;
-import com.slx.funstream.rest.APIUtils;
 import com.slx.funstream.rest.model.Smile;
 import com.slx.funstream.utils.LogUtils;
 import com.slx.funstream.utils.PrefUtils;
@@ -63,12 +63,15 @@ import static com.slx.funstream.chat.SmileRepo.SMILE_PATTERN;
 import static com.slx.funstream.utils.TextUtils.makeFrom;
 import static com.slx.funstream.utils.TextUtils.makeTo;
 
-public class ChatAdapter extends UltimateViewAdapter implements View.OnClickListener {
+public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> implements View.OnClickListener {
 
 	private static final int FROM_TWITCH = -100;
 	private static final int FROM_GG = -101;
 	private List<ChatMessage> mMessages;
 	private Context context;
+
+	private int primaryColor;
+	private int darkColor;
 
 	// Picasso does not hold a strong reference to the Target object
 	private ArrayList<Target> targets = new ArrayList<>();
@@ -79,6 +82,9 @@ public class ChatAdapter extends UltimateViewAdapter implements View.OnClickList
 	Picasso picasso;
 	@Inject
 	PrefUtils prefUtils;
+	@Inject
+	UserStore userStore;
+	private boolean isShowSmileys = true;
 
 	public void setOnChatMessageClickListener(OnChatMessageClick callback) {
 		this.callback = callback;
@@ -89,10 +95,15 @@ public class ChatAdapter extends UltimateViewAdapter implements View.OnClickList
 	public ChatAdapter(Context context) {
 		this.context = context;
 		Injector.INSTANCE.getApplicationComponent().inject(this);
+		isShowSmileys = prefUtils.isShowSmileys();
+
+		primaryColor = ContextCompat.getColor(context, R.color.primary);
+		darkColor = ContextCompat.getColor(context, R.color.black);
 	}
 
+
 	@Override
-	public UltimateRecyclerviewViewHolder onCreateViewHolder(ViewGroup parent) {
+	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 		final View view = LayoutInflater.from(context).inflate(R.layout.row_chat_message, parent, false);
 
 		final ViewHolder viewHolder = new ViewHolder(view);
@@ -101,46 +112,68 @@ public class ChatAdapter extends UltimateViewAdapter implements View.OnClickList
 	}
 
 	@Override
-	public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+	public void onBindViewHolder(ViewHolder holder, int position) {
 		// Reset
-		((ViewHolder) holder).messageRoot.setEnabled(true);
-		((ViewHolder) holder).tvFrom.setCompoundDrawablesWithIntrinsicBounds(0,0,0,0);
+		// clear after non-funstream chat messages disabling
+		holder.messageRoot.setEnabled(true);
+		// clear tw and gg icons
+		holder.tvFrom.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+		// clear conversation
+		holder.messageRoot.setBackgroundResource(0);
+//		holder.tvText.setTextColor(darkColor);
 
-		ChatMessage message = mMessages.get(position);
+		final ChatMessage message = mMessages.get(position);
 		long fromId = message.getFrom().getId();
 
 		if( fromId == FROM_TWITCH || fromId == FROM_GG ){
 			if(fromId == FROM_TWITCH)  {
-				((ViewHolder) holder).tvFrom
+				holder.tvFrom
 						.setCompoundDrawablesWithIntrinsicBounds(R.drawable.twitch, 0, 0, 0);
 			}
 			if(fromId == FROM_GG)  {
-				((ViewHolder) holder).tvFrom
+				holder.tvFrom
 						.setCompoundDrawablesWithIntrinsicBounds(R.drawable.goodgame, 0, 0, 0);
 			}
 
-			// Disable row
-			((ViewHolder) holder).messageRoot.setEnabled(false);
+			// Disable row for non non-funstream chat messages
+			holder.messageRoot.setEnabled(false);
 		}
-		((ViewHolder) holder).setFrom(message.getFrom());
-		((ViewHolder) holder).setTo(message.getTo());
+		holder.setFrom(message.getFrom());
+		holder.setTo(message.getTo());
 
-		// Add smileys
+//		//	handle /me
+//		if(message.getText().contains("/me")){
+//			message.setText(message.getText().replace("/me ", ""));
+//			//
+//			holder.tvText.setTextColor(primaryColor);
+//		}
+
 		Spannable spannable = spannableFactory.newSpannable(message.getText());
-		((ViewHolder) holder).setMessage(spannable);
-		addSmiles(spannable, ((ViewHolder) holder).tvText);
-
+		holder.setMessage(spannable);
+		if(isShowSmileys) {
+			// Add smileys
+			addSmiles(spannable, holder.tvText);
+		}
 		// Add links
 		addLinks(spannable);
-
 		// Add Images
 		// Check if user allowed it
 //		if(prefUtils.isShowImages()){
-//			linksToImages(spannable, ((ViewHolder) holder).tvText);
+//			linksToImages(spannable, ((ViewHolder holder).tvText);
 //		}
 
+		//
+		if(userStore.isUserLoggedIn() && message.getTo() != null && message.getTo().getId() == userStore.getCurrentUser().getId()){
+			holder.messageRoot.setBackgroundResource(R.drawable.selector_row_chat_message_to);
+		}
+
 		// Set Tag
-		((ViewHolder) holder).messageRoot.setTag(holder);
+		holder.messageRoot.setTag(holder);
+	}
+
+	@Override
+	public int getItemCount() {
+		return mMessages != null ? mMessages.size() : 0;
 	}
 
 	private void addSmiles(Spannable spannable, TextView textView) {
@@ -161,8 +194,7 @@ public class ChatAdapter extends UltimateViewAdapter implements View.OnClickList
 			Smile smile = smileRepo.getSmile(matcher.group(1));
 			if(smile != null){
 				picasso
-					.load(APIUtils.FUNSTREAM_SMILES + smile.getImage())
-//				    .resizeDimen(R.dimen.chat_smile, R.dimen.chat_smile)
+					.load(smile.getUrl())
 					.into(target);
 			}
 		}
@@ -192,29 +224,7 @@ public class ChatAdapter extends UltimateViewAdapter implements View.OnClickList
 		}
 	}
 
-	@Override
-	public int getAdapterItemCount() {
-		if (mMessages != null) return mMessages.size();
-		else return 0;
-	}
-
-	@Override
-	public long generateHeaderId(int i) {
-		return 0;
-	}
-
-
-	@Override
-	public RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup viewGroup) {
-		return null;
-	}
-
-	@Override
-	public void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder, int i) {
-
-	}
-
-	public static class ViewHolder extends UltimateRecyclerviewViewHolder {
+	public static class ViewHolder extends RecyclerView.ViewHolder {
 		@Bind(R.id.tvText)
 		TextView tvText;
 		@Bind(R.id.tvFrom)
@@ -249,6 +259,8 @@ public class ChatAdapter extends UltimateViewAdapter implements View.OnClickList
 				tvTo.setText(makeTo(user));
 			}
 		}
+
+
 	}
 
 	private class ImageTarget implements Target {

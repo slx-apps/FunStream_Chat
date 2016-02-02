@@ -20,6 +20,7 @@ package com.slx.funstream.rest;
 import com.slx.funstream.rest.services.FunstreamApiService;
 import com.squareup.okhttp.OkHttpClient;
 
+import retrofit.CallAdapter;
 import retrofit.Converter;
 import retrofit.Retrofit;
 
@@ -29,13 +30,13 @@ public class FSRestClient {
 
 	public FSRestClient(OkHttpClient client,
 	                    Converter.Factory convFactory,
-	                    //CallAdapter.Factory callAdapterFactory,
+	                    CallAdapter.Factory callAdapterFactory,
 	                    String base){
 		// 2.0
 		Retrofit retrofit = new Retrofit.Builder()
 				//.addConverterFactory(MoshiConverterFactory.create())
 				.addConverterFactory(convFactory)
-				//.addCallAdapterFactory(callAdapterFactory)
+				.addCallAdapterFactory(callAdapterFactory)
 				.client(client)
 				.baseUrl(base)
 				.build();

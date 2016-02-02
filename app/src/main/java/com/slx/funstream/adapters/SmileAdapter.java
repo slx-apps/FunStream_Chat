@@ -24,11 +24,10 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
-import com.slx.funstream.dagger.Injector;
 import com.slx.funstream.R;
-import com.slx.funstream.rest.APIUtils;
-import com.slx.funstream.ui.chat.SmileGridView.OnSmileClickListener;
+import com.slx.funstream.dagger.Injector;
 import com.slx.funstream.rest.model.Smile;
+import com.slx.funstream.ui.chat.SmileGridView.OnSmileClickListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -67,15 +66,10 @@ public class SmileAdapter extends ArrayAdapter<Smile> {
 			holder.icon = (ImageView) v.findViewById(R.id.smile_icon);
 			v.setTag(holder);
 		}
-		Smile smile = getItem(position);
+		final Smile smile = getItem(position);
 		ViewHolder holder = (ViewHolder) v.getTag();
-		smilePicasso.load(APIUtils.FUNSTREAM_SMILES+smile.getImage()).into(holder.icon);
-		holder.icon.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				smileClickListener.onSmileClicked(getItem(position));
-			}
-		});
+		smilePicasso.load(smile.getUrl()).into(holder.icon);
+		holder.icon.setOnClickListener(view -> smileClickListener.onSmileClicked(getItem(position)));
 		return v;
 	}
 

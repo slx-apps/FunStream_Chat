@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~   Copyright (C) 2015 Alex Neeky
   ~
@@ -14,20 +15,9 @@
   ~   limitations under the License.
   -->
 
-<android.support.v7.widget.Toolbar
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/toolbar_stream"
-    android:background="@color/primary"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-    app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-    android:layout_height="?attr/actionBarSize"
-    android:layout_width="match_parent">
-
-	<CheckBox
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text=""
-		android:id="@+id/checkBox"/>
-
-</android.support.v7.widget.Toolbar>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" >
+	<solid android:color="#ff0000" />
+	<stroke
+		android:width="1dp"
+		android:color="#888888" />
+</shape>

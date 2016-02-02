@@ -20,9 +20,7 @@
                 android:layout_height="wrap_content"
                 android:padding="@dimen/spacing_normal"
                 android:id="@+id/messageRoot"
-                android:background="@drawable/row_chat_message"
-
-    >
+                android:background="@drawable/row_chat_message">
 
     <TextView
         android:layout_width="wrap_content"

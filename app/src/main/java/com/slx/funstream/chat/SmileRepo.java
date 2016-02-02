@@ -19,7 +19,6 @@ package com.slx.funstream.chat;
 
 import android.util.Log;
 
-import com.slx.funstream.rest.APIUtils;
 import com.slx.funstream.rest.FSRestClient;
 import com.slx.funstream.rest.model.Smile;
 import com.slx.funstream.utils.LogUtils;
@@ -43,9 +42,8 @@ import static android.text.TextUtils.isEmpty;
 public class SmileRepo {
 	public static final String SMILE_REGEX = "(:[a-z0-9-_]+:)";
 	public static Pattern SMILE_PATTERN = Pattern.compile(SMILE_REGEX, Pattern.CASE_INSENSITIVE);
-	//public static Pattern URL_PATTERN = android.util.Patterns.WEB_URL;
 
-	private List<Map<String, Smile>> smiles;
+	private Map<String, Smile> smiles;
 	private final FSRestClient restClient;
 	private final Picasso picasso;
 	private boolean isSmilesInitialazed = false;
@@ -59,9 +57,6 @@ public class SmileRepo {
 		return callback.get();
 	}
 
-	public interface OnSmileLoaded {
-		void onSmileLoaded();
-	}
 
 	@Inject
 	public SmileRepo(FSRestClient restClient, Picasso picasso) {
@@ -71,18 +66,22 @@ public class SmileRepo {
 
 	public void loadSmiles(){
 		if(isSmilesInitialazed) return;
-		Call<List<Map<String, Smile>>> call = restClient.getApiService().getSmiles();
-		call.enqueue(new Callback<List<Map<String, Smile>>>() {
+		Call<Map<String, Smile>> call = restClient.getApiService().getSmiles();
+		call.enqueue(new Callback<Map<String, Smile>>() {
 			@Override
-			public void onResponse(Response<List<Map<String, Smile>>> response, Retrofit retrofit) {
+			public void onResponse(Response<Map<String, Smile>> response, Retrofit retrofit) {
 				smiles = response.body();
 				Log.d(LogUtils.TAG, "Smiles loaded. Size=" + response.body().size());
-				warmSmileImages(smiles);
+				//warmSmileImages(smiles);
+				isSmilesInitialazed = true;
+				if(getCallback() != null) getCallback().onSmileLoaded();
 			}
 
 			@Override
 			public void onFailure(Throwable t) {
-				Log.e(LogUtils.TAG, "Cant load smiles " + t.toString());
+				Log.e(LogUtils.TAG, "Can't load smiles " + t.toString());
+				// mark init anyway
+				isSmilesInitialazed = true;
 			}
 		});
 	}
@@ -91,22 +90,15 @@ public class SmileRepo {
 		return isSmilesInitialazed;
 	}
 
-	public List<Map<String, Smile>> getSmiles(){
+	public Map<String, Smile> getSmiles(){
 		return smiles;
 	}
 
-//	public void addPatterns(List<Map<String, Smile>> list){
-//		smiles.addAll(list);
-//	}
-
 	public Smile getSmile(String pattern){
-		// If > 1 ?
 		Smile smile = null;
 		if (!isSmilesInitialazed) return null;
-		for(Map<String, Smile> smileTab : smiles){
-			if(smileTab.containsKey(pattern)){
-				smile = smileTab.get(pattern);
-			}
+		if(smiles.containsKey(pattern)){
+			smile = smiles.get(pattern);
 		}
 		return smile;
 	}
@@ -118,10 +110,9 @@ public class SmileRepo {
 			List<Smile> smilesList = Collections.list(Collections.enumeration(smiles.get(i).values()));
 
 			for(Smile smiley : smilesList){
-				if (!isEmpty(smiley.getImage())) {
-					Log.d(LogUtils.TAG, smiley.toString());
+				if (!isEmpty(smiley.getUrl())) {
 					picasso
-							.load(APIUtils.FUNSTREAM_SMILES + smiley.getImage())
+							.load(smiley.getUrl())
 							.fetch(new com.squareup.picasso.Callback() {
 								@Override
 								public void onSuccess() {
@@ -142,5 +133,9 @@ public class SmileRepo {
 				}
 			}
 		}
+	}
+
+	public interface OnSmileLoaded {
+		void onSmileLoaded();
 	}
 }

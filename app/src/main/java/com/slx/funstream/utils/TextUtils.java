@@ -17,15 +17,26 @@
 package com.slx.funstream.utils;
 
 
+import com.slx.funstream.chat.ChatApiUtils;
 import com.slx.funstream.model.ChatUser;
 
 public final class TextUtils {
 
 	public static String makeFrom(ChatUser user){
-		return user.getName()+':';
+		//return user.getName()+':';
+		return user.getName();
 	}
 	public static String makeTo(ChatUser user){
 		return user.getName()+',';
+	}
+
+	public static String setChatChannel(long channelId){
+		if(channelId == ChatApiUtils.CHANNEL_MAIN)
+			return ChatApiUtils.CHAT_CHANNEL_MAIN;
+		else if (channelId == ChatApiUtils.CHANNEL_ADMIN)
+			return ChatApiUtils.CHAT_CHANNEL_ADMIN;
+		else
+			return ChatApiUtils.CHAT_CHANNEL_STREAM + String.valueOf(channelId);
 	}
 
 	private TextUtils() {

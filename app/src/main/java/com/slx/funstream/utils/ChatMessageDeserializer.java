@@ -24,7 +24,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.slx.funstream.model.ChatMessage;
-import com.slx.funstream.model.ChatUser;
 import com.slx.funstream.rest.model.CurrentUser;
 
 import java.lang.reflect.Type;
@@ -49,9 +48,9 @@ public class ChatMessageDeserializer implements JsonDeserializer<ChatMessage[]> 
 				JsonObject jsonMessage = jsonMessages.get(i).getAsJsonObject();
 				ChatMessage chatMessage = new ChatMessage();
 				chatMessage.setId(jsonMessage.get(ID).getAsLong());
-				chatMessage.setChannel(jsonMessage.get(CHANNEL).getAsString());
-				chatMessage.setFrom((ChatUser) context.deserialize(jsonMessage.get(FROM).getAsJsonObject(), CurrentUser.class));
-				chatMessage.setTo((ChatUser) context.deserialize(jsonMessage.get(TO).getAsJsonObject(), CurrentUser.class));
+				chatMessage.setChannel(jsonMessage.get(CHANNEL).getAsLong());
+				chatMessage.setFrom(context.deserialize(jsonMessage.get(FROM).getAsJsonObject(), CurrentUser.class));
+				chatMessage.setTo(context.deserialize(jsonMessage.get(TO).getAsJsonObject(), CurrentUser.class));
 				chatMessage.setText(jsonMessage.get(TEXT).getAsString());
 				chatMessage.setTime(jsonMessage.get(TIME).getAsString());
 				messages[i] = chatMessage;

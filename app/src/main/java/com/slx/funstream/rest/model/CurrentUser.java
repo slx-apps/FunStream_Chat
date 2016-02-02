@@ -60,6 +60,12 @@ public class CurrentUser {
 	public CurrentUser() {
 	}
 
+	public CurrentUser(String name, long id, String token) {
+		this.name = name;
+		this.id = id;
+		this.token = token;
+	}
+
 	@Override
 	public String toString() {
 		return "User{" +

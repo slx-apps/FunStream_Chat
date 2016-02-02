@@ -29,6 +29,12 @@
 			android:defaultValue="true"
 			android:key="chat.awake"
             />
+        <CheckBoxPreference
+            android:title="@string/prefs_chat_smiley"
+            android:summary="@string/prefs_chat_smiley_summary"
+            android:defaultValue="true"
+            android:key="chat.smiley"
+            />
       <!--<CheckBoxPreference
           android:title="@string/prefs_chat_images"
           android:summary="@string/prefs_chat_images_summary"

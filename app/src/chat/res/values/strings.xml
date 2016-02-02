@@ -24,13 +24,14 @@
 	<string name="title_activity_about" translatable="false">About</string>
 	<string name="title_activity_licenses">Licenses</string>
 	<string name="refresh">Refresh</string>
-	<string name="search_query_hint">Enter streamer\'s name</string>
+	<string name="search">Search</string>
+	<string name="search_query_hint">Streamer or channel</string>
 
 
 	<string name="activity_login_prompt_username">Username</string>
 	<string name="activity_login_prompt_password">Password</string>
 	<string name="log_in">Log in</string>
-	<string name="log_in_from_site">Log in using browser (OAuth)</string>
+	<string name="log_in_from_site">Log in via browser (OAuth)</string>
 	<string name="log_in_from_site_desc">* You do not need enter your credentials if you\'re using OAuth</string>
 
 	<string name="log_in_error">Username or Password is incorrect</string>
@@ -43,6 +44,7 @@
 
 	<string name="tab_title_streams">Streams</string>
 	<string name="tab_title_channels">Channels</string>
+	<string name="tab_title_favorites">Favorites</string>
 
 	<string name="stream_reload">Reload</string>
 	<string name="error_stream_loading">Can\'t load stream</string>
@@ -50,10 +52,15 @@
 	<string name="error_no_connection">No connection</string>
 	<string name="error_streams_loading">Can\'t load streams</string>
 	<string name="error_loading_action">Try again</string>
+	<string name="error_chat_join">Can\'t join chat channel</string>
+	<string name="error_chat_leave">Can\'t join leave channel</string>
+	<string name="error_chat_send_message">Can\'t send message</string>
+	<string name="error_chat_login">Can\'t login</string>
+	<string name="error_chat_history">Can\'t get chat history</string>
+	<string name="error_chat_user_list">Can\'t get user list</string>
 
 	<string name="action_settings">Settings</string>
-	<string name="search">Streamer name</string>
-	<string name="main">Main</string>
+	<string name="main" translatable="false">Main</string>
 	<string name="streamer">Message to streamer</string>
 	<string name="prefs_category_title_chat">Chat settings</string>
 	<string name="prefs_chat_scroll">Chat scroll</string>
@@ -62,6 +69,10 @@
 	<string name="prefs_chat_awake_summary">Keep chat screen on</string>
 	<string name="prefs_chat_images">Show images</string>
 	<string name="prefs_chat_images_summary">Allow show images</string>
+	<string name="prefs_chat_smiley">Show smileys</string>
+	<string name="prefs_chat_smiley_summary">Show smileys in chat</string>
+
+
 
 
 	<string name="chat_connect">Connecting …</string>
@@ -77,6 +88,9 @@
 
 	<string name="dialog_login_title">Log in</string>
 	<string name="dialog_login_pending">Authenticating …</string>
+	<string name="dialog_users_title">Users:</string>
+
+	<string name="category_top">Top</string>
 
 	<string name="about" translatable="false">
 		<BIG>Non-official android chat client for funstream.tv and sc2tv.ru.</BIG> \n\n

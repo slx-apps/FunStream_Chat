@@ -17,7 +17,7 @@
 package com.slx.funstream.model;
 
 
-import com.slx.funstream.chat.ChatApiUtils;
+import com.slx.funstream.utils.TextUtils;
 
 public class ChatMessage {
 	long id;
@@ -64,8 +64,8 @@ public class ChatMessage {
 		return channel;
 	}
 
-	public void setChannel(String channel) {
-		this.channel = ChatApiUtils.CHAT_CHANNEL_STREAM + channel;
+	public void setChannel(long channelId) {
+		this.channel = TextUtils.setChatChannel(channelId);
 	}
 
 	public String getText() {

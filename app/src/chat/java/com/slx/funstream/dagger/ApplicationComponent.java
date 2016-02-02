@@ -24,7 +24,7 @@ import com.slx.funstream.adapters.SmileAdapter;
 import com.slx.funstream.chat.ChatService;
 import com.slx.funstream.rest.FunstreamApiModule;
 import com.slx.funstream.ui.chat.ChatFragment;
-import com.slx.funstream.ui.login.LoginActivity;
+import com.slx.funstream.ui.login.LoginFragment;
 import com.slx.funstream.ui.streams.ChatListFragment;
 import com.slx.funstream.ui.streams.StreamActivity;
 import com.slx.funstream.ui.streams.StreamsActivity;
@@ -51,7 +51,7 @@ public interface ApplicationComponent {
 	void inject(ChatListFragment chatListFragment);
 	void inject(StreamsActivity streamsActivity);
 	void inject(StreamActivity streamActivity);
-	void inject(LoginActivity loginActivity);
+	void inject(LoginFragment loginFragment);
 	void inject(ChatFragment chatFragment);
 	void inject(SmileAdapter smileAdapter);
 }

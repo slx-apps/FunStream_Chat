@@ -17,18 +17,29 @@
 <resources>
 
 	<!-- Base application theme. -->
-	<style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-		<!-- Customize your theme here. -->
-		<item name="searchViewStyle">@style/SearchViewStyle</item>
+	<style name="AppBaseTheme" parent="Theme.AppCompat.Light.NoActionBar">
 		<item name="colorPrimary">@color/primary</item>
 		<item name="colorPrimaryDark">@color/primary_dark</item>
 		<item name="colorAccent">@color/accent</item>
+	</style>
 
+	<style name="AppTheme.Light" parent="AppBaseTheme">
+		<item name="searchViewStyle">@style/AppTheme.Light.SearchView</item>
+	</style>
+
+	<style name="AppTheme.Light.SearchView" parent="Widget.AppCompat.SearchView">
+		<item name="queryHint">@string/search_query_hint</item>
+	</style>
+
+	<!-- Toobar -->
+	<style name="AppTheme.Toolbar" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+		<item name="searchViewStyle">@style/AppTheme.Light.SearchView</item>
 	</style>
 
 	<!-- Tab layouts -->
 	<style name="ChannelTabLayoutStyle" parent="Widget.Design.TabLayout">
 		<item name="tabBackground">@drawable/selectable_tab_background</item>
+		<item name="tabIndicatorHeight">4dp</item>
 		<item name="tabIndicatorColor">@color/accent</item>
 		<item name="tabTextAppearance">@style/TabTextStyle</item>
 	</style>
@@ -39,16 +50,17 @@
 	</style>
 	<style name="TabTextStyle" parent="TextAppearance.Design.Tab">
 		<item name="textAllCaps">false</item>
-		<item name="android:textSize">20sp</item>
-		<item name="android:textColor">@android:color/white</item>
-	</style>
-
-	<style name="SearchViewStyle" parent="Widget.AppCompat.SearchView">
-		<item name="queryHint">@string/search_query_hint</item>
+		<!--<item name="android:textSize">@dimen/text_size_normal</item>-->
+		<item name="android:textColor">@color/white</item>
 	</style>
 
 	<!-- EditTexts -->
 	<style name="LoginEditTextStyle" parent="Widget.Design.TextInputLayout">
+		<item name="android:maxLines">1</item>
+		<item name="android:singleLine">true</item>
+	</style>
+
+	<style name="SendEditTextStyle" parent="Widget.Design.TextInputLayout">
 		<item name="android:maxLines">1</item>
 		<item name="android:singleLine">true</item>
 	</style>
@@ -72,10 +84,12 @@
 		<item name="android:background">@color/primary</item>
 	</style>
 
+	<style name="ListDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+	</style>
+
 	<style name="keyboard_animation">
 		<item name="android:windowEnterAnimation">@anim/slide_in</item>
 		<item name="android:windowExitAnimation">@anim/slide_out</item>
 	</style>
-
 
 </resources>

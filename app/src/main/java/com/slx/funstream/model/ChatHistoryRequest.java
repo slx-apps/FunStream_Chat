@@ -17,27 +17,18 @@
 package com.slx.funstream.model;
 
 
+import com.slx.funstream.utils.TextUtils;
+
 public class ChatHistoryRequest {
 	String channel;
-	String id;
 	int amount;
-	String direction;
-	//String options;
-
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public void setDirection(String direction) {
-		this.direction = direction;
-	}
+	//ChatHistoryQuery query;
 
 	public void setAmount(int amount) {
 		this.amount = amount;
 	}
 
-	public void setChannel(String channel) {
-		this.channel = channel;
+	public void setChannel(long channel) {
+		this.channel = TextUtils.setChatChannel(channel);
 	}
 }

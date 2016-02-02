@@ -27,7 +27,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
@@ -36,6 +36,7 @@ import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.ui.AppSettingsActivity;
 import com.slx.funstream.ui.chat.ChatFragment;
 import com.slx.funstream.ui.login.LoginActivity;
+import com.slx.funstream.ui.login.LoginFragment;
 import com.slx.funstream.utils.PrefUtils;
 import com.slx.funstream.utils.Toaster;
 
@@ -54,7 +55,7 @@ public class StreamActivity extends AppCompatActivity {
 	@Bind(R.id.toolbar)
 	Toolbar toolbar;
 	@Bind(R.id.stream_root)
-	RelativeLayout streamRoot;
+	LinearLayout streamRoot;
 
 	@Inject
 	PrefUtils prefUtils;
@@ -109,6 +110,15 @@ public class StreamActivity extends AppCompatActivity {
 	}
 
 	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		if(userStore.isUserLoggedIn()) {
+			MenuItem menuItem = menu.findItem(R.id.menu_log_in);
+			menuItem.setVisible(false);
+		}
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
 
@@ -157,20 +167,21 @@ public class StreamActivity extends AppCompatActivity {
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == REQUEST_CODE) {
 			if (resultCode == RESULT_OK) {
-				if (data.hasExtra(LoginActivity.FIELD_TOKEN)
-						&& data.hasExtra(LoginActivity.FIELD_USERID)) {
+				if (data.hasExtra(LoginFragment.FIELD_TOKEN)
+						&& data.hasExtra(LoginFragment.FIELD_USERID)) {
 					CurrentUser user = new CurrentUser();
-					Long userId = data.getLongExtra(LoginActivity.FIELD_USERID, -999);
+					Long userId = data.getLongExtra(LoginFragment.FIELD_USERID, -999);
 					// Check if something went wrong
 					if(userId == -999) {
 						Toaster.makeLongToast(this, getString(R.string.error_login));
 						return;
 					}
 					user.setId(userId);
-					user.setName(data.getStringExtra(LoginActivity.FIELD_USERNAME));
-					user.setToken(data.getStringExtra(LoginActivity.FIELD_TOKEN));
+					user.setName(data.getStringExtra(LoginFragment.FIELD_USERNAME));
+					user.setToken(data.getStringExtra(LoginFragment.FIELD_TOKEN));
 					prefUtils.saveUser(user);
 					userStore.fetchUser();
+					invalidateOptionsMenu();
 				}
 			}
 //			else {

@@ -23,4 +23,5 @@ public interface FunstreamChatEventsListener {
 	void onEventMessages();
 	void onError(String errorMessage);
 	void onServerMessage(String message);
+	void onUserListLoaded(Integer[] userIds);
 }

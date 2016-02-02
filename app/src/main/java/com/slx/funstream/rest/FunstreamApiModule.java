@@ -24,8 +24,10 @@ import com.squareup.picasso.Picasso;
 
 import dagger.Module;
 import dagger.Provides;
+import retrofit.CallAdapter;
 import retrofit.Converter;
 import retrofit.GsonConverterFactory;
+import retrofit.RxJavaCallAdapterFactory;
 
 @Module
 public class FunstreamApiModule {
@@ -41,11 +43,11 @@ public class FunstreamApiModule {
 		return GsonConverterFactory.create(gson);
 	}
 
-//	@Provides
-//	@PerApp
-//	CallAdapter.Factory provideCallAdapterFactory() {
-//		return RxJavaCallAdapterFactory.create();
-//	}
+	@Provides
+	@PerApp
+	CallAdapter.Factory provideCallAdapterFactory() {
+		return RxJavaCallAdapterFactory.create();
+	}
 
 //  1.9
 //	@Provides
@@ -61,14 +63,9 @@ public class FunstreamApiModule {
 
 	@Provides
 	@PerApp
-	FSRestClient provideFunstreamApi(OkHttpClient client,
-	                                 Converter.Factory convFactory
-	                                 //CallAdapter.Factory callAdapterFactory
-	) {
-		return new FSRestClient(client,
-				convFactory,
-				//callAdapterFactory,
-				APIUtils.FUNSTREAM_API_ENDPOINT);
+	FSRestClient provideFunstreamApi(OkHttpClient client, Converter.Factory convFactory,
+	                                 CallAdapter.Factory callAdapterFactory) {
+		return new FSRestClient(client, convFactory, callAdapterFactory, APIUtils.FUNSTREAM_API_ENDPOINT);
 	}
 
 }

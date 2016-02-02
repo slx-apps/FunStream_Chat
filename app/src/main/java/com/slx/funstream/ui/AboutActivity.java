@@ -28,7 +28,7 @@ import butterknife.ButterKnife;
 
 public class AboutActivity extends AppCompatActivity {
 
-	@Bind(R.id.stream_toolbar)
+	@Bind(R.id.toolbar)
 	Toolbar toolbar;
 
 	@Override
