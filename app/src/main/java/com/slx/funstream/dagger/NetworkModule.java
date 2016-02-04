@@ -135,7 +135,7 @@ public class NetworkModule {
 		client.setSslSocketFactory(sslContext.getSocketFactory());
 
 		client.networkInterceptors().add(userAgentInterceptor);
-//		client.setConnectTimeout(5, SECONDS);
+//		client.setConnectTimeout(, SECONDS);
 //		client.setReadTimeout(5, SECONDS);
 //		client.setWriteTimeout(5, SECONDS);
 

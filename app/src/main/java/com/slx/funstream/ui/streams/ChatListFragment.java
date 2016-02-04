@@ -382,6 +382,7 @@ public class ChatListFragment extends RxFragment implements OnChatChannelClick,
 						}
 					}
 				});
+		//ContentResponse
 //		Call<List<Stream>> call = restClient.getApiService().getContent(new ContentRequest(STREAM, TYPE, new Category("top")));
 //		call.enqueue(new Callback<List<Stream>>() {
 //			@Override

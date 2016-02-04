@@ -26,6 +26,7 @@ import com.slx.funstream.rest.model.Category;
 import com.slx.funstream.rest.model.CategoryRequest;
 import com.slx.funstream.rest.model.ChatListRequest;
 import com.slx.funstream.rest.model.ContentRequest;
+import com.slx.funstream.rest.model.ContentResponse;
 import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.rest.model.OAuthRequest;
 import com.slx.funstream.rest.model.OAuthResponse;
@@ -46,7 +47,7 @@ public interface FunstreamApiService {
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.API_CONTENT)
-	Call<List<Stream>> getContent(@Body ContentRequest contentRequest);
+	Call<ContentResponse> getContent(@Body ContentRequest contentRequest);
 	//{"content":"stream","type":"all","category":{"slug":"top"}}
 
 	// Categories

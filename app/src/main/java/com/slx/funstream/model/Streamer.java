@@ -21,16 +21,14 @@ public class Streamer {
 	long id;
 	String name;
 
+	public Streamer() {}
+
 	public long getId() {
 		return id;
 	}
-
 
 	public String getName() {
 		return name;
 	}
 
-
-	public Streamer() {
-	}
 }

@@ -14,35 +14,22 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.model;
+package com.slx.funstream.rest.model;
 
 
-import com.google.gson.annotations.SerializedName;
+public class ChatListRequest {
 
-public class Stream {
+	Integer[] ids;
 
-	@SerializedName("owner")
-	Streamer streamer;
-	String name;
-	Boolean adult;
-	Long rating;
-
-    public Stream() {}
-
-	public Streamer getStreamer() {
-		return streamer;
+	public Integer[] getIds() {
+		return ids;
 	}
 
-	public String getName() {
-		return name;
+	public void setIds(Integer[] ids) {
+		this.ids = ids;
 	}
 
-	public Boolean isAdult() {
-		return adult;
+	public ChatListRequest(Integer[] ids) {
+		this.ids = ids;
 	}
-
-	public Long getRating() {
-		return rating;
-	}
-
 }
