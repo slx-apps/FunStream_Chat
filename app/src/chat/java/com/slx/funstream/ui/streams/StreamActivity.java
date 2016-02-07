@@ -31,7 +31,7 @@ import android.widget.LinearLayout;
 
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
-import com.slx.funstream.dagger.Injector;
+import com.slx.funstream.di.Injector;
 import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.ui.AppSettingsActivity;
 import com.slx.funstream.ui.chat.ChatFragment;

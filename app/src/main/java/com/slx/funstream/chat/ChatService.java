@@ -27,7 +27,7 @@ import com.google.gson.Gson;
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
 import com.slx.funstream.auth.UserStore.UserStoreListener;
-import com.slx.funstream.dagger.Injector;
+import com.slx.funstream.di.Injector;
 import com.slx.funstream.model.ChatChannelRequest;
 import com.slx.funstream.model.ChatHistoryRequest;
 import com.slx.funstream.model.ChatListResponse;
@@ -43,7 +43,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
-import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;

@@ -14,33 +14,29 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.dagger;
+package com.slx.funstream;
 
+
+import android.app.Application;
 import android.content.Context;
 
-import com.slx.funstream.CustomApplication;
+import com.slx.funstream.di.Injector;
+import com.squareup.leakcanary.LeakCanary;
+import com.squareup.leakcanary.RefWatcher;
 
-import dagger.Module;
-import dagger.Provides;
+public class App extends Application {
+	private RefWatcher refWatcher;
 
-@Module
-public class ApplicationModule {
-	private final CustomApplication application;
-
-	public ApplicationModule(CustomApplication application) {
-		this.application = application;
+	public static RefWatcher getRefWatcher(Context context) {
+		App application = (App) context.getApplicationContext();
+		return application.refWatcher;
 	}
 
-	@Provides
-	@PerApp
-	public CustomApplication application() {
-		return this.application;
-	}
-
-	@Provides
-	@PerApp
-	public Context applicationContext() {
-		return this.application;
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		Injector.INSTANCE.initializeApplicationComponent(this);
+		if (BuildConfig.DEBUG) refWatcher = LeakCanary.install(this);
 	}
 
 }

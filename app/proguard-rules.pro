@@ -37,11 +37,12 @@
 -keep interface android.support.v7.app.** { *; }
 
 #
-# Retrofit
--dontwarn retrofit.**
--keep class retrofit.** { *; }
+# Retrofit 2
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
 -keepattributes Signature
--keepattributes *Annotation*
+-keepattributes Exceptions
+
 -keepclasseswithmembers class * {
     @retrofit.http.* <methods>;
 }

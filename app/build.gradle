@@ -7,14 +7,22 @@ apply plugin: 'me.tatarka.retrolambda'
 advancedVersioning {
     nameOptions {
         versionMajor 1
-        versionMinor 3
-        versionPatch 5
+        versionMinor 4
+        versionPatch 0
     }
 
     outputOptions {
         renameOutput true
         nameFormat '${appName}-${buildType}-${versionName}'
     }
+}
+
+Properties funstream = new Properties()
+try {
+    funstream.load(file('funstream.properties').newDataInputStream())
+}
+catch (Exception ex) {
+    throw new GradleException("Missing funstream.properties, check the APP_KEY");
 }
 
 android {
@@ -47,6 +55,7 @@ android {
         targetSdkVersion 23
         versionCode advancedVersioning.versionCode
         versionName advancedVersioning.versionName
+
     }
 
     buildTypes {
@@ -56,11 +65,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             applicationIdSuffix '.debug'
 //            signingConfig signingConfigs.debug
+            buildConfigField "String", "APP_KEY", "\"${funstream.getProperty("app_key")}\""
         }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            buildConfigField "String", "APP_KEY", "\"${funstream.getProperty("app_key")}\""
         }
     }
 
@@ -93,13 +104,13 @@ dependencies {
     apt 'com.google.dagger:dagger-compiler:2.0.2'
     provided 'org.glassfish:javax.annotation:10.0-b28'
     // Network
-    //compile 'com.squareup.retrofit:retrofit:1.9.0'
-    compile 'com.squareup.retrofit:retrofit:2.0.0-beta2'
-    compile 'com.squareup.retrofit:adapter-rxjava:2.0.0-beta2'
-    compile 'com.squareup.retrofit:converter-gson:2.0.0-beta2'
+    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
+    compile 'com.squareup.retrofit2:adapter-rxjava:2.0.0-beta4'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta4'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.squareup.okhttp:okhttp:2.5.0'
-    compile 'com.google.code.gson:gson:2.4'
+    compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.0.2'
+    compile 'com.squareup.okhttp3:okhttp:3.1.0'
+    compile 'com.google.code.gson:gson:2.5'
     // WS
     // compile 'org.java-websocket:Java-WebSocket:1.3.0'
     //    compile('io.socket:socket.io-client:0.6.1') {
@@ -116,10 +127,10 @@ dependencies {
     // RW
     //compile 'com.marshalchen.ultimaterecyclerview:library:0.3.18'
     // rx
-    compile 'io.reactivex:rxandroid:1.0.1'
-    compile 'io.reactivex:rxjava:1.0.16'
-    compile 'com.trello:rxlifecycle:0.3.0'
-    compile 'com.trello:rxlifecycle-components:0.3.0'
+    compile 'io.reactivex:rxandroid:1.1.0'
+    compile 'io.reactivex:rxjava:1.1.0'
+    compile 'com.trello:rxlifecycle:0.4.0'
+    compile 'com.trello:rxlifecycle-components:0.4.0'
     compile 'com.jakewharton.rxbinding:rxbinding-support-v4:0.3.0'
     compile 'com.jakewharton.rxbinding:rxbinding-appcompat-v7:0.3.0'
 
@@ -140,4 +151,16 @@ dependencies {
                 module: 'httpclient'
     }
 
+
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.1'
+    androidTestCompile 'com.android.support.test:runner:0.4.1'
+    androidTestCompile 'com.android.support.test:rules:0.4.1'
+    androidTestCompile 'com.android.support:support-annotations:23.1.1'
+    androidTestCompile('com.android.support.test.espresso:espresso-contrib:2.2') {
+        // Necessary to avoid version conflicts
+        exclude group: 'com.android.support', module: 'appcompat'
+        exclude group: 'com.android.support', module: 'support-v4'
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude module: 'recyclerview-v7'
+    }
 }

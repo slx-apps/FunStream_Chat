@@ -56,8 +56,8 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.slx.funstream.App;
 import com.slx.funstream.BuildConfig;
-import com.slx.funstream.CustomApplication;
 import com.slx.funstream.R;
 import com.slx.funstream.adapters.ChatAdapter;
 import com.slx.funstream.adapters.SimpleUserArrayAdapter;
@@ -66,7 +66,7 @@ import com.slx.funstream.chat.ChatApiUtils;
 import com.slx.funstream.chat.ChatService;
 import com.slx.funstream.chat.FunstreamChatEventsListener;
 import com.slx.funstream.chat.SmileRepo;
-import com.slx.funstream.dagger.Injector;
+import com.slx.funstream.di.Injector;
 import com.slx.funstream.model.ChatMessage;
 import com.slx.funstream.model.ChatUser;
 import com.slx.funstream.rest.FSRestClient;
@@ -253,7 +253,7 @@ public class ChatFragment extends RxFragment
 		rvChat.setItemAnimator(new DefaultItemAnimator());
 		rvChat.setHasFixedSize(false);
 
-		if (smileRepo.isSmilesInitialazed()) {
+		if (smileRepo.isSmilesInitialized()) {
 			createSmileKeyboardPopUp();
 			showChatViews();
 		}
@@ -421,7 +421,7 @@ public class ChatFragment extends RxFragment
 		targets = null;
 		context.stopService(new Intent(context, ChatService.class));
 		if (BuildConfig.DEBUG) {
-			RefWatcher refWatcher = CustomApplication.getRefWatcher(getActivity());
+			RefWatcher refWatcher = App.getRefWatcher(getActivity());
 			refWatcher.watch(this);
 //			refWatcher.watch(mService);
 //			refWatcher.watch(smileKeyboard);

@@ -14,23 +14,18 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.dagger;
+package com.slx.funstream.di;
 
 
 import android.content.Context;
-import android.util.Log;
 
+import com.jakewharton.picasso.OkHttp3Downloader;
 import com.slx.funstream.BuildConfig;
 import com.slx.funstream.rest.UserAgentInterceptor;
-import com.slx.funstream.utils.LogUtils;
-import com.squareup.okhttp.Cache;
-import com.squareup.okhttp.OkHttpClient;
 import com.squareup.picasso.LruCache;
-import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -46,6 +41,8 @@ import javax.net.ssl.X509TrustManager;
 
 import dagger.Module;
 import dagger.Provides;
+import okhttp3.Cache;
+import okhttp3.OkHttpClient;
 
 @Module
 public class NetworkModule {
@@ -53,12 +50,11 @@ public class NetworkModule {
 	private static final int PICASSO_MEMORY_CASHE_SIZE = 20 * 1024 * 1024;//20mb
 
 	private static final String USER_AGENT = "AndroidClient v/" + BuildConfig.VERSION_NAME;
+
 	@Provides
 	@PerApp
 	OkHttpClient provideOkHttpClient(Context context,
 	                                 UserAgentInterceptor userAgentInterceptor) {
-		OkHttpClient client = new OkHttpClient();
-
 		// Obtain sslContext
 //		SSLContext sslContext = null;
 //		try {
@@ -128,21 +124,19 @@ public class NetworkModule {
 		try {
 			sslContext = SSLContext.getInstance("TLS");
 			sslContext.init(keyManager, trustAllCerts, new java.security.SecureRandom());
-			//HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		client.setSslSocketFactory(sslContext.getSocketFactory());
-
-		client.networkInterceptors().add(userAgentInterceptor);
-//		client.setConnectTimeout(, SECONDS);
-//		client.setReadTimeout(5, SECONDS);
-//		client.setWriteTimeout(5, SECONDS);
 
 		// Install an HTTP cache in the application cache directory.
 		File cacheDir = new File(context.getCacheDir(), "http");
 		Cache cache = new Cache(cacheDir, DISK_CACHE_SIZE);
-		client.setCache(cache);
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(userAgentInterceptor)
+                .cache(cache)
+                .sslSocketFactory(sslContext.getSocketFactory())
+                .build();
 
 		return client;
 	}
@@ -155,7 +149,7 @@ public class NetworkModule {
 
 	@Provides
 	@PerApp
-	Picasso providePicassoClient(Context context, OkHttpDownloader downloader) {
+	Picasso providePicassoClient(Context context, OkHttp3Downloader downloader) {
 		return new Picasso.Builder(context)
 				.downloader(downloader)
 	//			.indicatorsEnabled(true)
@@ -165,8 +159,8 @@ public class NetworkModule {
 
 	@Provides
 	@PerApp
-	OkHttpDownloader provideDownloader(OkHttpClient okHttpClient) {
-		return new OkHttpDownloader(okHttpClient);
+    OkHttp3Downloader provideDownloader(OkHttpClient okHttpClient) {
+		return new OkHttp3Downloader(okHttpClient);
 	}
 
 //	@Provides

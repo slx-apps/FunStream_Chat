@@ -36,9 +36,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 
+import com.slx.funstream.BuildConfig;
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
-import com.slx.funstream.dagger.Injector;
+import com.slx.funstream.di.Injector;
 import com.slx.funstream.rest.FSRestClient;
 import com.slx.funstream.rest.model.AuthRequest;
 import com.slx.funstream.rest.model.AuthResponse;
@@ -55,10 +56,9 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import hugo.weaving.DebugLog;
-import retrofit.Call;
-import retrofit.Callback;
-import retrofit.Response;
-import retrofit.Retrofit;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -249,7 +249,7 @@ public class LoginFragment extends RxFragment {
 			return;
 		}
 
-		restClient.getApiService().getPermissionCodeObs(new OAuthRequest(UserStore.APP_KEY))
+		restClient.getApiService().getPermissionCodeObs(new OAuthRequest(BuildConfig.APP_KEY))
 				.subscribeOn(Schedulers.io())
 				.observeOn(AndroidSchedulers.mainThread())
 				.compose(bindToLifecycle())
@@ -307,30 +307,28 @@ public class LoginFragment extends RxFragment {
 		//showProgressDialog();
 		Call<AuthResponse> call = restClient.getApiService().login(new AuthRequest(login, password));
 		call.enqueue(new Callback<AuthResponse>() {
-			@DebugLog
+
 			@Override
-			public void onResponse(Response<AuthResponse> response, Retrofit retrofit) {
-				if (response.body() != null) {
-					AuthResponse authResponse = response.body();
-					token = authResponse.getToken();
+			public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
+                if (response.body() != null) {
+                    AuthResponse authResponse = response.body();
+                    token = authResponse.getToken();
 
-					sendResult(authResponse.getUser().getId(),
-							authResponse.getUser().getName(),
-							token);
-				}
+                    sendResult(authResponse.getUser().getId(),
+                            authResponse.getUser().getName(),
+                            token);
+                }
 
-				if (progressDialog != null && progressDialog.isShowing())
-					progressDialog.dismiss();
-
+                if (progressDialog != null && progressDialog.isShowing())
+                        progressDialog.dismiss();
 			}
 
-			@DebugLog
 			@Override
-			public void onFailure(Throwable t) {
-				if (progressDialog != null && progressDialog.isShowing())
-					progressDialog.dismiss();
-				Snackbar.make(loginRoot, getString(R.string.log_in_error), Snackbar.LENGTH_LONG)
-						.show();
+			public void onFailure(Call<AuthResponse> call, Throwable t) {
+                if (progressDialog != null && progressDialog.isShowing())
+                    progressDialog.dismiss();
+                Snackbar.make(loginRoot, getString(R.string.log_in_error), Snackbar.LENGTH_LONG)
+                        .show();
 			}
 		});
 	}
@@ -398,8 +396,9 @@ public class LoginFragment extends RxFragment {
 		Call<OAuthResponse> call = restClient.getApiService().getToken(new OAuthResponse(oAuthCode));
 		call.enqueue(new Callback<OAuthResponse>() {
 
-			@Override
-			public void onResponse(Response<OAuthResponse> response, Retrofit retrofit) {
+
+            @Override
+            public void onResponse(Call<OAuthResponse> call, Response<OAuthResponse> response) {
 				OAuthResponse oAuthResponse = response.body();
 				if (oAuthResponse != null) token = response.body().getToken();
 				if (!isEmpty(token)) {
@@ -409,25 +408,25 @@ public class LoginFragment extends RxFragment {
 					// SimpleToken simpleToken = userStore.parseToken(token);
 
 					// TODO Save user
-//					if (progressDialog != null && progressDialog.isShowing())
-//						progressDialog.dismiss();
+		//					if (progressDialog != null && progressDialog.isShowing())
+		//						progressDialog.dismiss();
 					// Send data back to caller and close activity
 					sendResult(oAuthResponse.getUser().getId(), oAuthResponse.getUser().getName(), token);
 				}
 				prefUtils.clearUserCode();
 				btOAuthLogin.setEnabled(true);
-			}
+            }
 
-			@Override
-			public void onFailure(Throwable t) {
+            @Override
+            public void onFailure(Call<OAuthResponse> call, Throwable t) {
 				Snackbar.make(loginRoot, getString(R.string.error_didnt_grant_access), Snackbar.LENGTH_LONG)
 						.show();
 				prefUtils.clearUserCode();
 				btOAuthLogin.setEnabled(true);
 				if (progressDialog != null && progressDialog.isShowing())
 					progressDialog.dismiss();
-			}
-		});
+            }
+        });
 	}
 
 	private void showProgressDialog(){

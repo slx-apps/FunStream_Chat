@@ -8,10 +8,10 @@
 /captures
 app/src/androidTest
 app/src/test
-app/src/main/java/com/slx/funstream/auth
 app/src/full
 app/gradle.properties
 app/version.properties
+app/funstream.properties
 gradle
 FunStream.iml
 gradlew

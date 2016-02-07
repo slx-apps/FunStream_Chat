@@ -14,7 +14,7 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.dagger;
+package com.slx.funstream.di;
 
 
 import java.lang.annotation.Retention;

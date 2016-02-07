@@ -50,10 +50,11 @@ import com.slx.funstream.adapters.StreamsAdapter;
 import com.slx.funstream.adapters.StreamsAdapter.OnChatChannelClick;
 import com.slx.funstream.auth.UserStore;
 import com.slx.funstream.chat.ChatApiUtils;
-import com.slx.funstream.dagger.Injector;
+import com.slx.funstream.di.Injector;
 import com.slx.funstream.model.Stream;
 import com.slx.funstream.rest.APIUtils;
 import com.slx.funstream.rest.FSRestClient;
+import com.slx.funstream.rest.StreamsRepo;
 import com.slx.funstream.rest.model.Category;
 import com.slx.funstream.rest.model.CategoryOptions;
 import com.slx.funstream.rest.model.CategoryRequest;
@@ -86,7 +87,7 @@ import static com.slx.funstream.utils.NetworkUtils.isNetworkConnectionPresent;
 
 public class ChatListFragment extends RxFragment implements OnChatChannelClick,
 		SearchView.OnQueryTextListener,
-		AdapterView.OnItemSelectedListener {
+		AdapterView.OnItemSelectedListener, rx.Observer<List<Stream>> {
 	public static final String KEY_CHAT_FRAGMENT_TYPE = "chat_fragment_type";
 
 	private static final String STREAM = "stream";
@@ -101,8 +102,9 @@ public class ChatListFragment extends RxFragment implements OnChatChannelClick,
 
 	private int fragType;
 
+    //private BehaviorSubject<List<Stream>> mStreamsObserver = BehaviorSubject.create();
 	private List<Stream> mStreams = new ArrayList<>();
-	private Observable<List<Stream>> mStreamsObs;
+	private Observable<List<Stream>> mStreamsObserver;
 	private StreamsAdapter mStreamsAdapter;
 	private ChatChannelsAdapter mChatChannelsAdapter;
 
@@ -114,6 +116,8 @@ public class ChatListFragment extends RxFragment implements OnChatChannelClick,
 	PrefUtils prefUtils;
 	@Inject
 	UserStore userStore;
+    @Inject
+    StreamsRepo streamsRepo;
 
 	private AppCompatSpinner mNavigationSpinner;
 	private Toolbar mToolbar;
@@ -149,24 +153,19 @@ public class ChatListFragment extends RxFragment implements OnChatChannelClick,
 		}
 
 		category = new Category(prefUtils.getLastSelectedCategory());
-		if (fragType == TYPE_LIST_STREAMS) {
-			restClient.getApiService().getCategoriesWithSubs(new CategoryRequest(APIUtils.CONTENT_STREAM, new CategoryOptions(true)))
-					.map(cat -> {
-						List<Category> cats = new ArrayList<>();
-						// Костыль пустого имени топ категории id == 1
-						if(cat.getId() == 1) cat.setName(getString(R.string.category_top));
-						cats.add(cat);
-						if(cat.getSubCategories() != null && cat.getSubCategories().length > 0) {
-							Category[] catsArray = cat.getSubCategories();
-							for (int i = 0; i < cat.getSubCategories().length; i++) {
-								cats.add(catsArray[i]);
-							}
-						}
-						return cats;
-					})
-					.subscribeOn(Schedulers.io())
-					.observeOn(AndroidSchedulers.mainThread())
-					.compose(bindToLifecycle());
+
+        inflateAdapter();
+        mStreamsObserver = streamsRepo.getAllStreams(category);
+
+        //fetchStreams(category);
+
+		setHasOptionsMenu(true);
+	}
+
+
+    private void inflateAdapter() {
+        if (fragType == TYPE_LIST_STREAMS) {
+//            streamsRepo.getAllCategories();
 //					.subscribe(new Subscriber<List<Category>>() {
 //						@Override
 //						public void onCompleted() {
@@ -185,46 +184,32 @@ public class ChatListFragment extends RxFragment implements OnChatChannelClick,
 //							addSpinner();
 //						}
 //					});
-			mStreamsAdapter = new StreamsAdapter(this, picasso);
+            mStreamsAdapter = new StreamsAdapter(this, picasso);
 
-		}
-		else if (fragType == TYPE_LIST_FAVORITE) {
-			restClient.getApiService().getCurrentUser(userStore.getCurrentUser().getToken())
-					.subscribeOn(Schedulers.io())
-					.observeOn(AndroidSchedulers.mainThread())
-					.compose(bindToLifecycle())
-					.subscribe(new Subscriber<CurrentUser>() {
-						@Override
-						public void onCompleted() {
 
-						}
+        } else if (fragType == TYPE_LIST_FAVORITE) {
+//            userStore.loadCurrentUser();
+//                    .subscribe(new Subscriber<CurrentUser>() {
+//                        @Override
+//                        public void onCompleted() {
+//
+//                        }
+//
+//                        @Override
+//                        public void onError(Throwable e) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onNext(CurrentUser currentUser) {
+//                            //
+//                        }
+//                    });
+        } else {
+            mChatChannelsAdapter = new ChatChannelsAdapter(this, StreamsContainerFragment.sChannels);
+        }
+    }
 
-						@Override
-						public void onError(Throwable e) {
-
-						}
-
-						@Override
-						public void onNext(CurrentUser currentUser) {
-							//
-						}
-					});
-		} else {
-			mChatChannelsAdapter = new ChatChannelsAdapter(this, StreamsContainerFragment.sChannels);
-		}
-
-		setHasOptionsMenu(true);
-	}
-
-	@Override
-	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-
-//		if (fragType == TYPE_LIST_STREAMS) {
-//			((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
-//		}
-
-	}
 
 	@Nullable
 	@Override
@@ -234,6 +219,31 @@ public class ChatListFragment extends RxFragment implements OnChatChannelClick,
 		return view;
 	}
 
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Configure the refreshing colors
+        swipeContainer.setColorSchemeResources(
+                R.color.primary,
+                R.color.accent);
+
+        RecyclerView.ItemDecoration itemDecoration = new
+                DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL_LIST);
+
+        rvStreams.setLayoutManager(new LinearLayoutManager(getActivity()));
+        rvStreams.addItemDecoration(itemDecoration);
+
+        if (fragType == TYPE_LIST_STREAMS) {
+            rvStreams.setAdapter(mStreamsAdapter);
+            swipeContainer.setOnRefreshListener(() -> fetchStreams(category));
+            // fetch only for stream tab
+            fetchStreams(category);
+        } else{
+            rvStreams.setAdapter(mChatChannelsAdapter);
+        }
+
+    }
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -305,33 +315,11 @@ public class ChatListFragment extends RxFragment implements OnChatChannelClick,
 		return super.onOptionsItemSelected(item);
 	}
 
-
-	@Override
-	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-
-		if (fragType == TYPE_LIST_STREAMS) {
-			rvStreams.setAdapter(mStreamsAdapter);
-			swipeContainer.setOnRefreshListener(() -> fetchStreams(category));
-		}else{
-			rvStreams.setAdapter(mChatChannelsAdapter);
-		}
-
-		// Configure the refreshing colors
-		swipeContainer.setColorSchemeResources(R.color.primary,
-				R.color.accent);
-
-		RecyclerView.ItemDecoration itemDecoration = new
-				DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL_LIST);
-
-		rvStreams.setLayoutManager(new LinearLayoutManager(getActivity()));
-		rvStreams.addItemDecoration(itemDecoration);
-	}
-
 	@Override
 	public void onResume() {
 		super.onResume();
 		// Fetch stream only for stream list
+        // TODO opt remove
 		if(fragType == TYPE_LIST_STREAMS){
 			if (isNetworkConnectionPresent(getActivity())) {
 				fetchStreams(category);
@@ -354,34 +342,11 @@ public class ChatListFragment extends RxFragment implements OnChatChannelClick,
 
 	private void fetchStreams(Category category) {
 		swipeContainer.setRefreshing(true);
-		restClient.getApiService().getContentObs(new ContentRequest(STREAM, TYPE, category))
-				.subscribeOn(Schedulers.io())
-				.observeOn(AndroidSchedulers.mainThread())
-				.compose(bindToLifecycle())
-				.subscribe(new Subscriber<List<Stream>>() {
-					@Override
-					public void onCompleted() {
-						Log.i(LogUtils.TAG, "mStreamsObs onCompleted");
-						swipeContainer.setRefreshing(false);
-					}
 
-					@Override
-					public void onError(Throwable e) {
-						Snackbar.make(rootView, getString(R.string.error_streams_loading), Snackbar.LENGTH_LONG)
-								.setAction(R.string.error_loading_action, reloadListener)
-								.show();
-						swipeContainer.setRefreshing(false);
-						Log.e(LogUtils.TAG, e.toString());
-					}
+        //mStreamsObserver = getStreams(category);
+        mStreamsObserver
+                .subscribe(this);
 
-					@Override
-					public void onNext(List<Stream> streams) {
-						mStreams = streams;
-						if (mStreamsAdapter != null) {
-							mStreamsAdapter.setData(mStreams);
-						}
-					}
-				});
 		//ContentResponse
 //		Call<List<Stream>> call = restClient.getApiService().getContent(new ContentRequest(STREAM, TYPE, new Category("top")));
 //		call.enqueue(new Callback<List<Stream>>() {
@@ -405,6 +370,8 @@ public class ChatListFragment extends RxFragment implements OnChatChannelClick,
 //			}
 //		});
 	}
+
+
 
 	@Override
 	public void onStreamClicked(Stream stream) {
@@ -531,4 +498,28 @@ public class ChatListFragment extends RxFragment implements OnChatChannelClick,
 		mToolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
 		mToolbar.addView(mNavigationSpinner);
 	}
+
+    @Override
+    public void onCompleted() {
+        Log.i(LogUtils.TAG, "fetchStreams onCompleted");
+        swipeContainer.setRefreshing(false);
+    }
+
+    @Override
+    public void onError(Throwable e) {
+        Snackbar.make(rootView, getString(R.string.error_streams_loading), Snackbar.LENGTH_LONG)
+                .setAction(R.string.error_loading_action, reloadListener)
+                .show();
+        swipeContainer.setRefreshing(false);
+        Log.e(LogUtils.TAG, e.toString());
+        e.printStackTrace();
+    }
+
+    @Override
+    public void onNext(List<Stream> streams) {
+        mStreams = streams;
+        if (mStreamsAdapter != null) {
+            mStreamsAdapter.setData(mStreams);
+        }
+    }
 }

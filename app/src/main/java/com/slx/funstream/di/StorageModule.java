@@ -14,7 +14,7 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.dagger;
+package com.slx.funstream.di;
 
 import android.content.Context;
 
@@ -24,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 import com.slx.funstream.auth.UserStore;
 import com.slx.funstream.model.ChatResponse;
 import com.slx.funstream.model.Stream;
+import com.slx.funstream.rest.FSRestClient;
 import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.rest.model.Smile;
 import com.slx.funstream.utils.ChatResponseDeserializer;
@@ -50,8 +51,8 @@ public class StorageModule {
 
 	@Provides
 	@PerApp
-	public UserStore provideUserStore(Gson gson, PrefUtils prefUtils){
-		return new UserStore(gson, prefUtils);
+	public UserStore provideUserStore(FSRestClient fsRestClient, Gson gson, PrefUtils prefUtils){
+		return new UserStore(fsRestClient, gson, prefUtils);
 	}
 
 	@Provides

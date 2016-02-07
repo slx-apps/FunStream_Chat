@@ -25,7 +25,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
 import com.slx.funstream.R;
-import com.slx.funstream.dagger.Injector;
+import com.slx.funstream.di.Injector;
 import com.slx.funstream.rest.model.Smile;
 import com.slx.funstream.ui.chat.SmileGridView.OnSmileClickListener;
 import com.squareup.picasso.Picasso;

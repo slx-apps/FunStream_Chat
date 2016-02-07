@@ -32,10 +32,10 @@ import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
-import retrofit.Call;
-import retrofit.Callback;
-import retrofit.Response;
-import retrofit.Retrofit;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static android.text.TextUtils.isEmpty;
 
@@ -46,7 +46,7 @@ public class SmileRepo {
 	private Map<String, Smile> smiles;
 	private final FSRestClient restClient;
 	private final Picasso picasso;
-	private boolean isSmilesInitialazed = false;
+	private boolean isSmilesInitialized = false;
 
 
 	WeakReference<OnSmileLoaded> callback;
@@ -65,29 +65,30 @@ public class SmileRepo {
 	}
 
 	public void loadSmiles(){
-		if(isSmilesInitialazed) return;
+		if(isSmilesInitialized) return;
 		Call<Map<String, Smile>> call = restClient.getApiService().getSmiles();
 		call.enqueue(new Callback<Map<String, Smile>>() {
+
 			@Override
-			public void onResponse(Response<Map<String, Smile>> response, Retrofit retrofit) {
-				smiles = response.body();
-				Log.d(LogUtils.TAG, "Smiles loaded. Size=" + response.body().size());
-				//warmSmileImages(smiles);
-				isSmilesInitialazed = true;
-				if(getCallback() != null) getCallback().onSmileLoaded();
+			public void onResponse(Call<Map<String, Smile>> call, Response<Map<String, Smile>> response) {
+                smiles = response.body();
+                Log.d(LogUtils.TAG, "Smiles loaded. Size=" + response.body().size());
+                //warmSmileImages(smiles);
+                isSmilesInitialized = true;
+                if(getCallback() != null) getCallback().onSmileLoaded();
 			}
 
 			@Override
-			public void onFailure(Throwable t) {
-				Log.e(LogUtils.TAG, "Can't load smiles " + t.toString());
-				// mark init anyway
-				isSmilesInitialazed = true;
+			public void onFailure(Call<Map<String, Smile>> call, Throwable t) {
+                Log.e(LogUtils.TAG, "Can't load smiles " + t.toString());
+                // mark init anyway
+                isSmilesInitialized = true;
 			}
 		});
 	}
 
-	public boolean isSmilesInitialazed(){
-		return isSmilesInitialazed;
+	public boolean isSmilesInitialized(){
+		return isSmilesInitialized;
 	}
 
 	public Map<String, Smile> getSmiles(){
@@ -96,7 +97,7 @@ public class SmileRepo {
 
 	public Smile getSmile(String pattern){
 		Smile smile = null;
-		if (!isSmilesInitialazed) return null;
+		if (!isSmilesInitialized) return null;
 		if(smiles.containsKey(pattern)){
 			smile = smiles.get(pattern);
 		}
@@ -116,7 +117,7 @@ public class SmileRepo {
 							.fetch(new com.squareup.picasso.Callback() {
 								@Override
 								public void onSuccess() {
-									isSmilesInitialazed = true;
+									isSmilesInitialized = true;
 									if(getCallback() != null){
 										getCallback().onSmileLoaded();
 									}
@@ -124,7 +125,7 @@ public class SmileRepo {
 
 								@Override
 								public void onError() {
-									isSmilesInitialazed = true;
+									isSmilesInitialized = true;
 									if(getCallback() != null){
 										getCallback().onSmileLoaded();
 									}

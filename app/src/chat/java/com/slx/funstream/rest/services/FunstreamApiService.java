@@ -35,12 +35,12 @@ import com.slx.funstream.rest.model.Smile;
 import java.util.List;
 import java.util.Map;
 
-import retrofit.Call;
-import retrofit.http.Body;
-import retrofit.http.GET;
-import retrofit.http.Header;
-import retrofit.http.Headers;
-import retrofit.http.POST;
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.Header;
+import retrofit2.http.Headers;
+import retrofit2.http.POST;
 import rx.Observable;
 
 public interface FunstreamApiService {
@@ -58,7 +58,7 @@ public interface FunstreamApiService {
 	//
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.API_CONTENT)
-	Observable<List<Stream>> getContentObs(@Body ContentRequest contentRequest);
+	Observable<List<Stream>> getStreams(@Body ContentRequest contentRequest);
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.API_AUTH_LOGIN)

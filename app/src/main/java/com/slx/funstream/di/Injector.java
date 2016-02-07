@@ -14,10 +14,10 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.dagger;
+package com.slx.funstream.di;
 
 
-import com.slx.funstream.CustomApplication;
+import com.slx.funstream.App;
 import com.slx.funstream.rest.FunstreamApiModule;
 
 public enum Injector {
@@ -28,8 +28,8 @@ public enum Injector {
 	private Injector(){
 	}
 
-	public void initializeApplicationComponent(CustomApplication customApplication) {
-		ApplicationModule applicationModule = new ApplicationModule(customApplication);
+	public void initializeApplicationComponent(App app) {
+		ApplicationModule applicationModule = new ApplicationModule(app);
 		StorageModule storageModule = new StorageModule();
 		FunstreamApiModule funstreamApiModule = new FunstreamApiModule();
 		this.applicationComponent = DaggerApplicationComponent.builder()

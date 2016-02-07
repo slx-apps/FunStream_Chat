@@ -14,11 +14,33 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.utils;
+package com.slx.funstream.di;
 
+import android.content.Context;
 
-public final class FilterUtils {
+import com.slx.funstream.App;
 
-	private FilterUtils() {
+import dagger.Module;
+import dagger.Provides;
+
+@Module
+public class ApplicationModule {
+	private final App application;
+
+	public ApplicationModule(App application) {
+		this.application = application;
 	}
+
+	@Provides
+	@PerApp
+	public App application() {
+		return this.application;
+	}
+
+	@Provides
+	@PerApp
+	public Context applicationContext() {
+		return this.application;
+	}
+
 }

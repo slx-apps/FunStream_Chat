@@ -18,11 +18,12 @@ package com.slx.funstream.rest;
 
 
 import com.slx.funstream.rest.services.FunstreamApiService;
-import com.squareup.okhttp.OkHttpClient;
 
-import retrofit.CallAdapter;
-import retrofit.Converter;
-import retrofit.Retrofit;
+import okhttp3.OkHttpClient;
+import retrofit2.CallAdapter;
+import retrofit2.Converter;
+import retrofit2.Retrofit;
+
 
 public class FSRestClient {
 	private FunstreamApiService apiService;

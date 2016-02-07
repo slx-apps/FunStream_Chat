@@ -14,11 +14,11 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.dagger;
+package com.slx.funstream.di;
 
 import android.content.Context;
 
-import com.slx.funstream.CustomApplication;
+import com.slx.funstream.App;
 import com.slx.funstream.adapters.ChatAdapter;
 import com.slx.funstream.adapters.SmileAdapter;
 import com.slx.funstream.chat.ChatService;
@@ -43,7 +43,7 @@ import dagger.Component;
 )
 public interface ApplicationComponent {
 	Context applicationContext();
-	CustomApplication application();
+	App application();
 
 	void inject(ChatService chatService);
 	void inject(ChatAdapter chatAdapter);

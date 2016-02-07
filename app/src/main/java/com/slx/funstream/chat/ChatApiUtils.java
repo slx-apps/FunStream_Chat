@@ -51,7 +51,7 @@ public final class ChatApiUtils {
 	public static final String CHAT_CHANNEL_MAIN = "main";
 	public static final String CHAT_CHANNEL_ADMIN = "admin";
 
-	public static final String CHAT_URL = "https://funstream.tv";
+	public static final String CHAT_URL = "http://funstream.tv";
 	public static final String CHAT_WS_URL = "wss://funstream.tv/socket.io/?EIO=3&transport=websocket";
 
 	public static final String CHAT_EVENT_USER_JOINED = "/chat/user/join";

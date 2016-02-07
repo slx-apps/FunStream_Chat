@@ -30,7 +30,7 @@ import android.view.ViewGroup;
 import com.slx.funstream.R;
 import com.slx.funstream.adapters.StreamListFragmentAdapter;
 import com.slx.funstream.auth.UserStore;
-import com.slx.funstream.dagger.Injector;
+import com.slx.funstream.di.Injector;
 
 import java.util.ArrayList;
 import java.util.List;

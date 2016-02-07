@@ -32,7 +32,7 @@ public final class APIUtils {
 	public static final String HEADER_API_VERSION = "Accept: application/json; version=1.0";
 	public static final String HEADER_API_TOKEN = "Token";
 //	public static final String FUNSTREAM_SMILES = "https://funstream.tv/build/images/smiles/";
-	public static final String FUNSTREAM_API_ENDPOINT = "https://funstream.tv";
+	public static final String FUNSTREAM_API_ENDPOINT = "http://funstream.tv";
 	public static final String API_CONTENT = "/api/content";
 
 	public static final String API_AUTH_LOGIN = "/api/user/login";
@@ -50,7 +50,7 @@ public final class APIUtils {
 	public static final String OAUTH_EXCHANGE = "/api/oauth/exchange";
 	public static final String OAUTH_CHECK = "/api/oauth/check";
 	public static final String OAUTH_GRANT = "/api/oauth/grant";
-	public static final String OAUTH_BROWSER_LINK = "https://funstream.tv/oauth/";
+	public static final String OAUTH_BROWSER_LINK = "http://funstream.tv/oauth/";
 
 	public static final String API_IDS_TO_LIST = "/api/user/list";
 

@@ -38,7 +38,7 @@ import android.widget.TextView;
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
 import com.slx.funstream.chat.SmileRepo;
-import com.slx.funstream.dagger.Injector;
+import com.slx.funstream.di.Injector;
 import com.slx.funstream.model.ChatMessage;
 import com.slx.funstream.model.ChatUser;
 import com.slx.funstream.rest.model.Smile;

@@ -18,23 +18,30 @@ package com.slx.funstream.rest;
 
 import com.google.gson.Gson;
 import com.slx.funstream.chat.SmileRepo;
-import com.slx.funstream.dagger.PerApp;
-import com.squareup.okhttp.OkHttpClient;
+import com.slx.funstream.di.PerApp;
 import com.squareup.picasso.Picasso;
 
 import dagger.Module;
 import dagger.Provides;
-import retrofit.CallAdapter;
-import retrofit.Converter;
-import retrofit.GsonConverterFactory;
-import retrofit.RxJavaCallAdapterFactory;
+import okhttp3.OkHttpClient;
+import retrofit2.CallAdapter;
+import retrofit2.Converter;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 @Module
 public class FunstreamApiModule {
+
 	@Provides
 	@PerApp
 	SmileRepo provideSmileRepo(FSRestClient restclient, Picasso picasso) {
 		return new SmileRepo(restclient, picasso);
+	}
+
+	@Provides
+	@PerApp
+	StreamsRepo provideStreamsRepo(FSRestClient fsRestClient) {
+		return new StreamsRepo(fsRestClient);
 	}
 
 	@Provides
@@ -49,21 +56,9 @@ public class FunstreamApiModule {
 		return RxJavaCallAdapterFactory.create();
 	}
 
-//  1.9
-//	@Provides
-//	@PerApp
-//	RestAdapter provideRestAdapter(Endpoint endpoint, Converter converter, Client client){
-//		return new RestAdapter.Builder()
-//		 .setEndpoint(endpoint)
-//		 .setConverter(converter)
-//		 .setClient(client)
-//		 .setLogLevel(BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE)
-//		 .build();
-//	}
-
 	@Provides
 	@PerApp
-	FSRestClient provideFunstreamApi(OkHttpClient client, Converter.Factory convFactory,
+	FSRestClient provideFSRestClient(OkHttpClient client, Converter.Factory convFactory,
 	                                 CallAdapter.Factory callAdapterFactory) {
 		return new FSRestClient(client, convFactory, callAdapterFactory, APIUtils.FUNSTREAM_API_ENDPOINT);
 	}
