@@ -36,10 +36,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 
+import com.slx.funstream.App;
 import com.slx.funstream.BuildConfig;
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
-import com.slx.funstream.di.Injector;
 import com.slx.funstream.rest.FSRestClient;
 import com.slx.funstream.rest.model.AuthRequest;
 import com.slx.funstream.rest.model.AuthResponse;
@@ -55,7 +55,6 @@ import javax.inject.Inject;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import hugo.weaving.DebugLog;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -128,7 +127,7 @@ public class LoginFragment extends RxFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Injector.INSTANCE.getApplicationComponent().inject(this);
+		App.applicationComponent().inject(this);
 	}
 
 	@Nullable
@@ -333,7 +332,6 @@ public class LoginFragment extends RxFragment {
 		});
 	}
 
-	@DebugLog
 	private void sendResult(long userId, String username, String token) {
 		Intent intent = new Intent();
 		intent.putExtra(FIELD_USERID, userId);

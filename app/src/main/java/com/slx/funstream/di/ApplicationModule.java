@@ -19,6 +19,7 @@ package com.slx.funstream.di;
 import android.content.Context;
 
 import com.slx.funstream.App;
+import com.slx.funstream.utils.RxBus;
 
 import dagger.Module;
 import dagger.Provides;
@@ -41,6 +42,13 @@ public class ApplicationModule {
 	@PerApp
 	public Context applicationContext() {
 		return this.application;
+	}
+
+
+	@Provides
+	@PerApp
+	public RxBus provideRxBus() {
+		return new RxBus();
 	}
 
 }

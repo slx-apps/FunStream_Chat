@@ -35,14 +35,13 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.slx.funstream.App;
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
 import com.slx.funstream.chat.SmileRepo;
-import com.slx.funstream.di.Injector;
 import com.slx.funstream.model.ChatMessage;
 import com.slx.funstream.model.ChatUser;
 import com.slx.funstream.rest.model.Smile;
-import com.slx.funstream.utils.LogUtils;
 import com.slx.funstream.utils.PrefUtils;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -56,15 +55,16 @@ import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import hugo.weaving.DebugLog;
+import rx.Subscriber;
 
 import static android.text.TextUtils.isEmpty;
 import static com.slx.funstream.chat.SmileRepo.SMILE_PATTERN;
 import static com.slx.funstream.utils.TextUtils.makeFrom;
 import static com.slx.funstream.utils.TextUtils.makeTo;
 
-public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> implements View.OnClickListener {
-
+public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder>
+		implements View.OnClickListener {
+	private static final String TAG = "ChatAdapter";
 	private static final int FROM_TWITCH = -100;
 	private static final int FROM_GG = -101;
 	private List<ChatMessage> mMessages;
@@ -94,7 +94,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> im
 
 	public ChatAdapter(Context context) {
 		this.context = context;
-		Injector.INSTANCE.getApplicationComponent().inject(this);
+		App.applicationComponent().inject(this);
 		isShowSmileys = prefUtils.isShowSmileys();
 
 		primaryColor = ContextCompat.getColor(context, R.color.primary);
@@ -162,11 +162,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> im
 //			linksToImages(spannable, ((ViewHolder holder).tvText);
 //		}
 
-		//
-		if(userStore.isUserLoggedIn() && message.getTo() != null && message.getTo().getId() == userStore.getCurrentUser().getId()){
-			holder.messageRoot.setBackgroundResource(R.drawable.selector_row_chat_message_to);
-		}
-
 		// Set Tag
 		holder.messageRoot.setTag(holder);
 	}
@@ -189,14 +184,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> im
 			// to prevent that the target gets garbage collected
 			// before the image is placed into the view
 			targets.add(target);
-			Log.d(LogUtils.TAG, "targets.size=" + targets.size());
+			Log.d(TAG, "targets.size=" + targets.size());
 
 			Smile smile = smileRepo.getSmile(matcher.group(1));
-			if(smile != null){
-				picasso
-					.load(smile.getUrl())
-					.into(target);
-			}
+            if (smile != null) {
+                picasso
+                        .load(smile.getUrl())
+                        .into(target);
+            }
 		}
 	}
 
@@ -204,14 +199,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> im
 		Linkify.addLinks(spannable, Linkify.WEB_URLS);
 	}
 
-	private void linksToImages(Spannable spannable, TextView textView){
+	private void linksToImages(Spannable spannable, TextView textView) {
 //		Matcher matcher = Linkify.WEB_URLS.matcher(spannable);
 //		URLSpan[] spans = textView.getUrls();
 		URLSpan[] spans = spannable.getSpans(0, spannable.length(), URLSpan.class);
-		Log.d(LogUtils.TAG, "URLSpan[] size="+spans.length);
+		Log.d(TAG, "URLSpan[] size="+spans.length);
 		for(URLSpan span : spans) {
 			String url = span.getURL();
-			Log.d(LogUtils.TAG, "START: " + spannable.getSpanStart(span) +
+			Log.d(TAG, "START: " + spannable.getSpanStart(span) +
 					"END: " + spannable.getSpanEnd(span) + " " + url);
 			ImageTarget t = new ImageTarget(spannable.getSpanStart(span), spannable.getSpanEnd(span), textView, spannable);
 			picasso
@@ -269,7 +264,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> im
 		WeakReference<TextView> messageText;
 		Spannable spannable;
 
-		@DebugLog
 		public ImageTarget(int start, int end, TextView messageText, Spannable spannable) {
 			this.start = start;
 			this.end = end;
@@ -315,7 +309,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> im
 			targets.remove(this);
 		}
 
-		@DebugLog
 		@Override
 		public void onBitmapFailed(Drawable errorDrawable) {
 			targets.remove(this);

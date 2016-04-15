@@ -27,6 +27,7 @@ import com.slx.funstream.model.Stream;
 import com.slx.funstream.rest.FSRestClient;
 import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.rest.model.Smile;
+import com.slx.funstream.rest.services.FunstreamApi;
 import com.slx.funstream.utils.ChatResponseDeserializer;
 import com.slx.funstream.utils.FunstreamDeserializer;
 import com.slx.funstream.utils.PrefUtils;
@@ -51,21 +52,20 @@ public class StorageModule {
 
 	@Provides
 	@PerApp
-	public UserStore provideUserStore(FSRestClient fsRestClient, Gson gson, PrefUtils prefUtils){
-		return new UserStore(fsRestClient, gson, prefUtils);
+	public UserStore provideUserStore(FunstreamApi funstreamApi, Gson gson, PrefUtils prefUtils){
+		return new UserStore(funstreamApi, gson, prefUtils);
 	}
 
 	@Provides
 	@PerApp
 	Gson provideGson() {
 		Type listStreamType = new TypeToken<List<Stream>>() {}.getType();
-		Type smilesType = new TypeToken<Map<String, Smile>>() {}.getType();
+		Type smilesType = new TypeToken<List<Smile>>() {}.getType();
 		return new GsonBuilder()
 			//.serializeNulls()
 			.registerTypeAdapter(listStreamType, new FunstreamDeserializer<List<Stream>>())
 			.registerTypeAdapter(smilesType, new SmileDeserializer())
 			.registerTypeAdapter(ChatResponse.class, new ChatResponseDeserializer())
-//				.registerTypeAdapter(ChatMessage[].class, new ChatMessageDeserializer())
 			.registerTypeAdapter(CurrentUser.class, new UserSerializer())
 			.create();
 	}

@@ -42,6 +42,7 @@ public class Smile {
 	String code;
 	String url;
 	int level;
+	boolean animated;
 	ChatUser user;
 
 	public int getId() {
@@ -106,6 +107,14 @@ public class Smile {
 
 	public void setUser(ChatUser user) {
 		this.user = user;
+	}
+
+	public boolean isAnimated() {
+		return animated;
+	}
+
+	public void setAnimated(boolean animated) {
+		this.animated = animated;
 	}
 
 	public Smile() {

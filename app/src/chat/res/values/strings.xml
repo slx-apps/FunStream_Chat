@@ -16,7 +16,7 @@
   -->
 
 <resources>
-	<string name="app_name">Funstream chat</string>
+	<string name="app_name">FChat</string>
 	<string name="activity_streams">Streams</string>
 	<string name="activity_stream">Chat</string>
 	<string name="activity_main_chat">Main Chat</string>
@@ -45,6 +45,7 @@
 	<string name="tab_title_streams">Streams</string>
 	<string name="tab_title_channels">Channels</string>
 	<string name="tab_title_favorites">Favorites</string>
+	<string name="tab_title_rooms">Rooms</string>
 
 	<string name="stream_reload">Reload</string>
 	<string name="error_stream_loading">Can\'t load stream</string>

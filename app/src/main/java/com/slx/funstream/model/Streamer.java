@@ -18,8 +18,8 @@ package com.slx.funstream.model;
 
 
 public class Streamer {
-	long id;
-	String name;
+	private long id;
+	private String name;
 
 	public Streamer() {}
 

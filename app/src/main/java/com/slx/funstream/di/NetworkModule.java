@@ -19,6 +19,7 @@ package com.slx.funstream.di;
 
 import android.content.Context;
 
+import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.jakewharton.picasso.OkHttp3Downloader;
 import com.slx.funstream.BuildConfig;
 import com.slx.funstream.rest.UserAgentInterceptor;
@@ -54,8 +55,55 @@ public class NetworkModule {
 	@Provides
 	@PerApp
 	OkHttpClient provideOkHttpClient(Context context,
-	                                 UserAgentInterceptor userAgentInterceptor) {
-		// Obtain sslContext
+	                                 UserAgentInterceptor userAgentInterceptor, SSLContext sslContext) {
+
+
+		// Install an HTTP cache in the application cache directory.
+		File cacheDir = new File(context.getCacheDir(), "http");
+		Cache cache = new Cache(cacheDir, DISK_CACHE_SIZE);
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(userAgentInterceptor)
+				.addNetworkInterceptor(new StethoInterceptor())
+                .cache(cache)
+                .sslSocketFactory(sslContext.getSocketFactory())
+                .build();
+
+		return client;
+	}
+
+	@Provides
+	@PerApp
+	UserAgentInterceptor provideUserAgentInterceptor(){
+		return new UserAgentInterceptor(USER_AGENT);
+	}
+
+	@Provides
+	@PerApp
+	Picasso providePicassoClient(Context context, OkHttp3Downloader downloader) {
+		return new Picasso.Builder(context)
+				.downloader(downloader)
+	//			.indicatorsEnabled(true)
+				.memoryCache(new LruCache(PICASSO_MEMORY_CASHE_SIZE))
+				.build();
+	}
+
+	@Provides
+	@PerApp
+    OkHttp3Downloader provideDownloader(OkHttpClient okHttpClient) {
+		return new OkHttp3Downloader(okHttpClient);
+	}
+
+//	@Provides
+//	@PerApp
+//	Client provideRetrofitClient(OkHttpClient okHttpClient) {
+//		return new OkClient(okHttpClient);
+//	}
+
+    @Provides
+    @PerApp
+    SSLContext provideSSLContext() {
+        // Obtain sslContext
 //		SSLContext sslContext = null;
 //		try {
 //			sslContext = SSLContext.getDefault();
@@ -96,76 +144,38 @@ public class NetworkModule {
 //			e.printStackTrace();
 //		}
 
-		SSLContext sslContext = null;
-		TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
-			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-				return new java.security.cert.X509Certificate[]{};
-			}
+        SSLContext sslContext = null;
+        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return new java.security.cert.X509Certificate[]{};
+            }
 
-			public void checkClientTrusted(X509Certificate[] chain,
-			                               String authType) throws CertificateException {
-			}
+            public void checkClientTrusted(X509Certificate[] chain,
+                                           String authType) throws CertificateException {
+            }
 
-			public void checkServerTrusted(X509Certificate[] chain,
-			                               String authType) throws CertificateException {
-			}
-		}};
+            public void checkServerTrusted(X509Certificate[] chain,
+                                           String authType) throws CertificateException {
+            }
+        }};
 
-		KeyManager[] keyManager = null;
-		try {
-			final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-			KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-			factory.init(keyStore, null);
-			keyManager = factory.getKeyManagers();
-		} catch (NoSuchAlgorithmException | UnrecoverableKeyException | KeyStoreException e) {
-			e.printStackTrace();
-		}
+        KeyManager[] keyManager = null;
+        try {
+            final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            factory.init(keyStore, null);
+            keyManager = factory.getKeyManagers();
+        } catch (NoSuchAlgorithmException | UnrecoverableKeyException | KeyStoreException e) {
+            e.printStackTrace();
+        }
 
-		try {
-			sslContext = SSLContext.getInstance("TLS");
-			sslContext.init(keyManager, trustAllCerts, new java.security.SecureRandom());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		// Install an HTTP cache in the application cache directory.
-		File cacheDir = new File(context.getCacheDir(), "http");
-		Cache cache = new Cache(cacheDir, DISK_CACHE_SIZE);
-
-        OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(userAgentInterceptor)
-                .cache(cache)
-                .sslSocketFactory(sslContext.getSocketFactory())
-                .build();
-
-		return client;
-	}
-
-	@Provides
-	@PerApp
-	UserAgentInterceptor provideUserAgentInterceptor(){
-		return new UserAgentInterceptor(USER_AGENT);
-	}
-
-	@Provides
-	@PerApp
-	Picasso providePicassoClient(Context context, OkHttp3Downloader downloader) {
-		return new Picasso.Builder(context)
-				.downloader(downloader)
-	//			.indicatorsEnabled(true)
-				.memoryCache(new LruCache(PICASSO_MEMORY_CASHE_SIZE))
-				.build();
-	}
-
-	@Provides
-	@PerApp
-    OkHttp3Downloader provideDownloader(OkHttpClient okHttpClient) {
-		return new OkHttp3Downloader(okHttpClient);
-	}
-
-//	@Provides
-//	@PerApp
-//	Client provideRetrofitClient(OkHttpClient okHttpClient) {
-//		return new OkClient(okHttpClient);
-//	}
+        try {
+            sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(keyManager, trustAllCerts, new java.security.SecureRandom());
+            return sslContext;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

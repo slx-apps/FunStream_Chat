@@ -20,23 +20,60 @@ package com.slx.funstream;
 import android.app.Application;
 import android.content.Context;
 
-import com.slx.funstream.di.Injector;
+import com.crashlytics.android.Crashlytics;
+import com.facebook.stetho.Stetho;
+import com.slx.funstream.di.ApplicationComponent;
+import com.slx.funstream.di.ApplicationModule;
+import com.slx.funstream.di.ChatComponent;
+import com.slx.funstream.di.ChatModule;
+import com.slx.funstream.di.DaggerApplicationComponent;
+import com.slx.funstream.di.DaggerChatComponent;
+import com.slx.funstream.di.StorageModule;
+import com.slx.funstream.di.FunstreamApiModule;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
 
+import io.fabric.sdk.android.Fabric;
+
 public class App extends Application {
+	private static ApplicationComponent applicationComponent;
+    private static ChatComponent chatComponent;
 	private RefWatcher refWatcher;
+
+	@Override
+	public void onCreate() {
+		super.onCreate();
+        Fabric.with(this, new Crashlytics());
+        Stetho.initializeWithDefaults(this);
+		initializeApplicationComponent(this);
+		if (BuildConfig.DEBUG) refWatcher = LeakCanary.install(this);
+	}
 
 	public static RefWatcher getRefWatcher(Context context) {
 		App application = (App) context.getApplicationContext();
 		return application.refWatcher;
 	}
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		Injector.INSTANCE.initializeApplicationComponent(this);
-		if (BuildConfig.DEBUG) refWatcher = LeakCanary.install(this);
-	}
+    public static void initializeApplicationComponent(App app) {
+        applicationComponent = DaggerApplicationComponent.builder()
+                .applicationModule(new ApplicationModule(app))
+                .storageModule(new StorageModule())
+                .funstreamApiModule(new FunstreamApiModule())
+                .build();
+    }
+    public static ApplicationComponent applicationComponent() {
+        return applicationComponent;
+    }
+
+    public static ChatComponent chatComponent() {
+        return chatComponent;
+    }
+
+    public static ChatComponent initializeChatComponent() {
+        return chatComponent = DaggerChatComponent.builder()
+                .chatModule(new ChatModule())
+                .applicationComponent(applicationComponent)
+                .build();
+    }
 
 }

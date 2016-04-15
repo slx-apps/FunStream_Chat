@@ -24,84 +24,79 @@ import com.nimbusds.jose.Payload;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.SignedJWT;
 import com.slx.funstream.model.SimpleToken;
-import com.slx.funstream.rest.FSRestClient;
 import com.slx.funstream.rest.model.CurrentUser;
-import com.slx.funstream.utils.LogUtils;
+import com.slx.funstream.rest.services.FunstreamApi;
 import com.slx.funstream.utils.PrefUtils;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import hugo.weaving.DebugLog;
 import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subjects.BehaviorSubject;
+import rx.subjects.PublishSubject;
 
 import static android.text.TextUtils.isEmpty;
 
 public class UserStore {
-	private FSRestClient restClient;
+	private static final String TAG = "UserStore";
+	private FunstreamApi funstreamApi;
 	private Gson mGson;
 	private PrefUtils prefUtils;
     private CurrentUser currentUser;
+	private BehaviorSubject<CurrentUser> user;
 
 	private boolean userTokenValid = false;
 
-	private List<UserStoreListener> listeners = new CopyOnWriteArrayList<>();
-
-	public UserStore(FSRestClient fsRestClient, Gson gson, PrefUtils prefUtils) {
+	public UserStore(FunstreamApi funstreamApi, Gson gson, PrefUtils prefUtils) {
 		this.mGson = gson;
 		this.prefUtils = prefUtils;
-        this.restClient = fsRestClient;
-		fetchUser();
+        this.funstreamApi = funstreamApi;
 	}
 
-	public void registerUserStoreListener(UserStoreListener listener){
-		if(!this.listeners.contains(listener)){
-			this.listeners.add(listener);
-		}
+	public BehaviorSubject<CurrentUser> fetchUser() {
+		user = BehaviorSubject.create(prefUtils.getUser());
+
+        user
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<CurrentUser>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.d(TAG, "UserStore->fetchUser->onCompleted");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "UserStore->fetchUser->onError " + e);
+                    }
+
+                    @Override
+                    public void onNext(CurrentUser user) {
+                        Log.d(TAG, "UserStore->fetchUser->onNext");
+                        currentUser = user;
+                    }
+        });
+		return user;
 	}
-
-	public boolean unregisterUserStoreListener(UserStoreListener listener){
-		return this.listeners.remove(listener);
-	}
-
-
-	/**
-	 * Retrieve {@link com.slx.funstream.rest.model.CurrentUser} from Shared Preferences
-	 *
-	 */
-	@DebugLog
-	public void fetchUser(){
-		currentUser = prefUtils.getUser();
-		isUserLoggedIn();
-		notifyListenersUserChanged();
-	}
-
-	public CurrentUser getCurrentUser() {
-		return currentUser;
-	}
-
 
 	/**
 	 * Check if user's token has not been expired
 	 * @return True if user token is valid
 	 */
-	@DebugLog
-	public boolean isUserLoggedIn(){
-		if(currentUser == null || isEmpty(currentUser.getToken())) return false;
-		SimpleToken token = parseToken(currentUser.getToken());
-		return isTokenExpire(token);
+	public static boolean isUserLoggedIn(CurrentUser user) {
+		if (user == null || isEmpty(user.getToken())) return false;
+        return true;
+		//SimpleToken token = parseToken(user.getToken());
+		//return isTokenExpire(token);
 	}
 
-	@DebugLog
-	public SimpleToken parseToken(String token){
+	private SimpleToken parseToken(String token){
 		try {
 			SignedJWT signedJWT = (SignedJWT)JWTParser.parse(token);
 			Payload payload = signedJWT.getPayload();
 			return mGson.fromJson(payload.toString(), SimpleToken.class);
 		} catch (java.text.ParseException e) {
-			Log.e(LogUtils.TAG, e.toString());
+			Log.e(TAG, e.toString());
 		}
 		return null;
 	}
@@ -116,36 +111,27 @@ public class UserStore {
 	 * @param token JWT Token
 	 * @return False if token expired
 	 */
-	@DebugLog
-	private boolean isTokenExpire(SimpleToken token){
-		if(token == null) {
-			Log.e(LogUtils.TAG, "User token is null");
+	private static boolean isTokenExpire(SimpleToken token) {
+		if (token == null) {
+			Log.e(TAG, "User token is null");
 			return true;
 		}
 
 		return token.getExp() < System.currentTimeMillis();
 	}
 
-	@DebugLog
-	public boolean isUserTokenValid() {
-		return userTokenValid;
+//	@DebugLog
+//	public boolean isUserTokenValid() {
+//		return userTokenValid;
+//	}
+
+
+	public CurrentUser getCurrentUser() {
+		return currentUser;
 	}
 
-	private void notifyListenersUserChanged(){
-		for(UserStoreListener listener : listeners){
-			listener.OnUserChanged();
-		}
+	public BehaviorSubject<CurrentUser> getUser() {
+		if (user == null) user = BehaviorSubject.create(prefUtils.getUser());
+		return user;
 	}
-
-	public interface UserStoreListener {
-		void OnUserChanged();
-	}
-
-    public Observable<CurrentUser> loadCurrentUser() {
-        return restClient.getApiService().getCurrentUser(getCurrentUser().getToken())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
-                //.compose(bindToLifecycle())
-    }
-
 }

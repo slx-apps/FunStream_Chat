@@ -25,7 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.slx.funstream.R;
-import com.slx.funstream.adapters.StreamsAdapter.OnChatChannelClick;
+import com.slx.funstream.ui.streams.ChannelsAdapter.OnChatChannelClick;
 
 import java.util.List;
 

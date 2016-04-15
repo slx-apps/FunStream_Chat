@@ -43,10 +43,6 @@ public class StreamsActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_streams);
 		ButterKnife.bind(this);
-//		if(prefUtils.isFirst()){
-//			prefUtils.setFirst();
-//			startActivity(new Intent(this, Intro.class));
-//		}
 
 		setSupportActionBar(toolbar);
 		//getSupportActionBar().setIcon(R.mipmap.ic_launcher);

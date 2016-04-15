@@ -27,23 +27,19 @@ import android.support.v7.widget.AppCompatPopupWindow;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.ImageButton;
 
 import com.slx.funstream.R;
-import com.slx.funstream.chat.SmileRepo;
 import com.slx.funstream.rest.model.Smile;
 import com.slx.funstream.ui.chat.SmileGridView.OnSmileClickListener;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-
-import hugo.weaving.DebugLog;
 
 /**
  * @author Alex Neeky
@@ -56,10 +52,9 @@ import hugo.weaving.DebugLog;
 
 public class SmileKeyboard extends AppCompatPopupWindow {
 	private static final int MAX_TABS = 9;
-	private final SmileRepo smileRepo;
-	Context context;
+	private Context context;
 	private WeakReference<View> contentRoot;
-
+	private Collection<Smile> smileList;
 	private int softKeyBoardHeight = 0;
 	private Boolean pendingOpen = false;
 	private Boolean isOpened = false;
@@ -68,12 +63,11 @@ public class SmileKeyboard extends AppCompatPopupWindow {
 	OnSmileBackspaceClickListener onSmileBackspaceClickListener;
 	OnSoftKeyboardOpenCloseListener onSoftKeyboardOpenCloseListener;
 
-	@DebugLog
-	public SmileKeyboard(Context context, View contentRoot, SmileRepo smileRepo) {
+	public SmileKeyboard(Context context, View contentRoot, Collection<Smile> smileList) {
 		super(context, null, 0);
 		this.context = context;
 		this.contentRoot = new WeakReference<>(contentRoot);
-		this.smileRepo = smileRepo;
+		this.smileList = smileList;
 		final View view = createView();
 		setContentView(view);
 		// please always make the soft input area visible when this window receives input focus
@@ -88,26 +82,23 @@ public class SmileKeyboard extends AppCompatPopupWindow {
 		TabLayout smileTablayout = (TabLayout) view.findViewById(R.id.smile_tablayout);
 		ViewPager smilePager = (ViewPager) view.findViewById(R.id.smile_pager);
 		ImageButton ibBackspace = (ImageButton) view.findViewById(R.id.ibBackspace);
-		ibBackspace.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if (onSmileBackspaceClickListener != null)
-					onSmileBackspaceClickListener.onSmileBackspaceClick(v);
-			}
-		});
+		ibBackspace.setOnClickListener(v -> {
+            if (onSmileBackspaceClickListener != null)
+                onSmileBackspaceClickListener.onSmileBackspaceClick(v);
+        });
 
 		List<SmileGridView> pagersGridViews = new ArrayList<>();
 		List<List<Smile>> tabs = new ArrayList<>();
-		//create tabs
+		// create tabs
 		for (int i = 0; i <= MAX_TABS; i++) {
 			tabs.add(i, new ArrayList<>());
 		}
 		// populate tabs
-		for(Smile smiley : smileRepo.getSmiles().values()){
-			tabs.get(smiley.getTab()).add(smiley);
+		for (Smile smiley : smileList) {
+			tabs.get(smiley.getLevel()).add(smiley);
 		}
-		for(List<Smile> tab : tabs){
-				pagersGridViews.add(new SmileGridView(context, tab, this));
+		for (List<Smile> tab : tabs) {
+			pagersGridViews.add(new SmileGridView(context, tab, this));
 		}
 
 		SmileTabPagerAdapter mSmileTabAdapter = new SmileTabPagerAdapter(pagersGridViews);
@@ -131,42 +122,40 @@ public class SmileKeyboard extends AppCompatPopupWindow {
 //		smileTablayout.invalidate();
 //	}
 
-	public void setOnSoftKeyboardOpenCloseListener(OnSoftKeyboardOpenCloseListener listener){
+	public void setOnSoftKeyboardOpenCloseListener(OnSoftKeyboardOpenCloseListener listener) {
 		this.onSoftKeyboardOpenCloseListener = listener;
 	}
-	public void setOnSmileClickedListener(OnSmileClickListener listener){
+	public void setOnSmileClickedListener(OnSmileClickListener listener) {
 		this.onSmileClickListener = listener;
 	}
-	public void setOnSmileBackspaceClickedListener(OnSmileBackspaceClickListener listener){
+	public void setOnSmileBackspaceClickedListener(OnSmileBackspaceClickListener listener) {
 		this.onSmileBackspaceClickListener = listener;
 	}
 
-	public void showAtBottom(){
+	public void showAtBottom() {
 		showAtLocation(contentRoot.get(), Gravity.BOTTOM, 0, 0);
 	}
 
-	public void showAtBottomPending(){
-		if(isKeyBoardOpen())
+	public void showAtBottomPending() {
+		if (isKeyBoardOpen())
 			showAtBottom();
 		else
 			pendingOpen = true;
 	}
 
-	public void setSize(int height, int width){
+	public void setSize(int height, int width) {
 		setWidth(width);
 		setHeight(height);
 	}
 
-	public Boolean isKeyBoardOpen(){
+	public Boolean isKeyBoardOpen() {
 		return isOpened;
 	}
 
-	public void setSizeForSoftKeyboard(){
+	public void setSizeForSoftKeyboard() {
 		View view = contentRoot.get();
-		contentRoot.get().getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-			@Override
-			public void onGlobalLayout() {
-			Rect r = new Rect();
+		contentRoot.get().getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+        	Rect r = new Rect();
 			contentRoot.get().getWindowVisibleDisplayFrame(r);
 
 			int screenHeight = contentRoot.get().getRootView().getHeight();
@@ -181,23 +170,22 @@ public class SmileKeyboard extends AppCompatPopupWindow {
 			if (heightDifference > 100) {
 				softKeyBoardHeight = heightDifference;
 				setSize(softKeyBoardHeight, LayoutParams.MATCH_PARENT);
-				if(!isOpened){
-					if(onSoftKeyboardOpenCloseListener!=null)
+				if (!isOpened) {
+					if(onSoftKeyboardOpenCloseListener != null)
 						onSoftKeyboardOpenCloseListener.onKeyboardOpen(softKeyBoardHeight);
 				}
 				isOpened = true;
-				if(pendingOpen){
+				if (pendingOpen) {
 					showAtBottom();
 					pendingOpen = false;
 				}
 			}
 			else{
 				isOpened = false;
-				if(onSoftKeyboardOpenCloseListener!=null)
+				if (onSoftKeyboardOpenCloseListener!=null)
 					onSoftKeyboardOpenCloseListener.onKeyboardClose();
 			}
-			}
-		});
+        });
 	}
 
 	private static class SmileTabPagerAdapter extends PagerAdapter {
@@ -222,10 +210,7 @@ public class SmileKeyboard extends AppCompatPopupWindow {
 
 		@Override
 		public int getCount() {
-			if(views != null)
-				return views.size();
-			else
-				return 0;
+			return views != null ? views.size() : 0;
 		}
 
 
@@ -251,7 +236,7 @@ public class SmileKeyboard extends AppCompatPopupWindow {
 		void onSmileBackspaceClick(View v);
 	}
 
-	public interface OnSoftKeyboardOpenCloseListener{
+	public interface OnSoftKeyboardOpenCloseListener {
 		void onKeyboardOpen(int keyBoardHeight);
 		void onKeyboardClose();
 	}

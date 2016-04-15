@@ -18,8 +18,8 @@ package com.slx.funstream.model;
 
 
 public class ChatResponse {
-	String status;
-	Result result;
+	private String status;
+	private Result result;
 
 	public String getStatus() {
 		return status;
@@ -37,6 +37,5 @@ public class ChatResponse {
 		this.result = result;
 	}
 
-	public ChatResponse() {
-	}
+	public ChatResponse() {}
 }

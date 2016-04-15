@@ -23,15 +23,14 @@ import org.json.JSONException;
 
 import java.util.List;
 
+import rx.subjects.BehaviorSubject;
+
 public interface ChatServiceInterface {
-	void connectChat();
+	void connectChat(long channelId);
 	void disconnectChat();
 	void joinChannel(long channel);
 	void leaveChannel(long channel);
-	void sendMessage(ChatMessage newMessage) throws JSONException;
+	void sendMessage(ChatMessage newMessage);
 	void loginChat();
-	List<ChatMessage> getChatMessages();
-	int getChatMessagesSize();
-	void addFunstreamChatEventsListener(FunstreamChatEventsListener listener);
-	boolean removeFunstreamChatEventsListener(FunstreamChatEventsListener listener);
+	BehaviorSubject<ChatMessage> getChatMessagesObservable();
 }

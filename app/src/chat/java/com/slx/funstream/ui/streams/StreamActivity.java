@@ -29,9 +29,9 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import com.slx.funstream.App;
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
-import com.slx.funstream.di.Injector;
 import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.ui.AppSettingsActivity;
 import com.slx.funstream.ui.chat.ChatFragment;
@@ -39,13 +39,19 @@ import com.slx.funstream.ui.login.LoginActivity;
 import com.slx.funstream.ui.login.LoginFragment;
 import com.slx.funstream.utils.PrefUtils;
 import com.slx.funstream.utils.Toaster;
+import com.trello.rxlifecycle.components.RxActivity;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
 
-public class StreamActivity extends AppCompatActivity {
+import static android.text.TextUtils.isEmpty;
+
+public class StreamActivity extends RxAppCompatActivity {
 	public static final String STREAMER_NAME = "streamer_name";
 	public static final String STREAMER_ID = "streamer_id";
 	public static final int REQUEST_CODE = 101;
@@ -74,10 +80,7 @@ public class StreamActivity extends AppCompatActivity {
 		setContentView(R.layout.stream_layout);
 
 		ButterKnife.bind(this);
-		Injector.INSTANCE.getApplicationComponent().inject(this);
-
-
-
+		App.applicationComponent().inject(this);
 
 		if (toolbar != null) {
 			setSupportActionBar(toolbar);
@@ -87,7 +90,6 @@ public class StreamActivity extends AppCompatActivity {
 		}
 
 		fm = getSupportFragmentManager();
-
 
 		if (savedInstanceState != null) {
 			streamer_name = savedInstanceState.getString(STREAMER_NAME);
@@ -111,10 +113,32 @@ public class StreamActivity extends AppCompatActivity {
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		if(userStore.isUserLoggedIn()) {
-			MenuItem menuItem = menu.findItem(R.id.menu_log_in);
-			menuItem.setVisible(false);
-		}
+		// Hide login button if user is not logged in
+		userStore
+				.fetchUser()
+				.compose(bindToLifecycle())
+                .observeOn(AndroidSchedulers.mainThread())
+				.subscribe(new Subscriber<CurrentUser>() {
+					@Override
+					public void onCompleted() {
+
+					}
+
+					@Override
+					public void onError(Throwable e) {
+
+					}
+
+					@Override
+					public void onNext(CurrentUser user) {
+						if (user == null ||
+								isEmpty(user.getToken())) {
+							MenuItem menuItem = menu.findItem(R.id.menu_log_in);
+							menuItem.setVisible(true);
+						}
+					}
+				});
+
 		return super.onPrepareOptionsMenu(menu);
 	}
 
@@ -184,9 +208,6 @@ public class StreamActivity extends AppCompatActivity {
 					invalidateOptionsMenu();
 				}
 			}
-//			else {
-//				Toaster.makeLongToast(context, getString(R.string.error_login));
-//			}
 		}
 	}
 

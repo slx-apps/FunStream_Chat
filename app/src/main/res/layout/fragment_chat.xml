@@ -16,16 +16,14 @@
   -->
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:descendantFocusability="beforeDescendants"
-        android:focusableInTouchMode="true"
-        android:id="@+id/contentRoot"
-        android:visibility="visible"
-                android:paddingLeft="@dimen/spacing_small"
-                android:paddingRight="@dimen/spacing_small"
-                android:paddingBottom="@dimen/spacing_small">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true"
+    android:id="@+id/contentRoot"
+    android:visibility="visible">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -40,19 +38,41 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="visible"
-            />
+            android:layout_marginLeft="@dimen/spacing_smallest"
+            android:layout_marginRight="@dimen/spacing_smallest" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:id="@+id/tvUserList"
-            android:layout_gravity="right|top"
+            android:layout_gravity="end|top"
             android:layout_margin="8dp"
             android:drawableLeft="@drawable/ic_chat_users_black"
+            android:drawableStart="@drawable/ic_chat_users_black"
             android:gravity="center"
             android:textSize="@dimen/text_size_small"
-            android:textColor="@color/black"/>
+            android:textColor="@color/black"
+            tools:text="194"
+            />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Scroll to new Messages"
+            android:id="@+id/btNewMessages"
+            android:layout_gravity="bottom"
+            android:background="@null"
+            android:visibility="gone" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Load 50 old messages"
+            android:id="@+id/btLoadOldMessages"
+            android:layout_gravity="start|top"
+            android:background="@null"
+            android:visibility="gone" />
     </FrameLayout>
 
     <LinearLayout
@@ -64,7 +84,9 @@
         android:layout_alignParentStart="false"
         android:id="@+id/chat_controls"
         android:visibility="visible"
-        android:layout_alignParentRight="true">
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        >
 <!--
         <Button
 		    android:layout_width="match_parent"
@@ -78,25 +100,29 @@
             android:layout_height="24dp"
             android:text=""
             android:id="@+id/tvTo"
-            android:drawableRight="@drawable/abc_ic_clear_mtrl_alpha"
             android:singleLine="true"
             android:gravity="center"
             android:background="@drawable/to_background"
             android:paddingLeft="@dimen/spacing_small"
             android:textColor="#fff"
             android:visibility="gone"
-            android:layout_marginBottom="4dp"
-            android:paddingRight="@dimen/spacing_small"/>
+            android:layout_marginBottom="@dimen/spacing_smallest"
+            android:paddingRight="@dimen/spacing_small"
+            tools:visibility="visible"
+            tools:text="Someone"
+            android:layout_marginLeft="@dimen/spacing_smallest" />
 
 	    <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/chat_buttons_layout"
-            android:visibility="gone">
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:background="@color/primary">
 
             <EditText
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:id="@+id/etNewMessage"
                 android:visibility="visible"
@@ -114,22 +140,26 @@
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
 	            android:id="@+id/ibSmiles"
-	            android:src="@drawable/ic_insert_emoticon_white_36dp"
+                app:srcCompat="@drawable/ic_emoticon"
 	            android:visibility="visible"
                 android:clickable="false"
                 android:background="@drawable/selector_button_dark"
 	            android:layout_marginLeft="@dimen/spacing_smallest"
-	            android:padding="@dimen/spacing_smallest"/>
+                android:layout_marginStart="@dimen/spacing_smallest"
+	            android:padding="@dimen/spacing_smallest"
+                />
 
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/sendMessage"
-                android:src="@drawable/ic_send_white_36dp"
+                app:srcCompat="@drawable/ic_send"
                 android:visibility="visible"
                 android:background="@drawable/selector_button_dark"
                 android:layout_marginLeft="@dimen/spacing_smallest"
-                android:padding="@dimen/spacing_smallest"/>
+                android:layout_marginStart="@dimen/spacing_smallest"
+                android:padding="@dimen/spacing_smallest"
+                />
         </LinearLayout>
     </LinearLayout>
 
@@ -146,16 +176,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/progressBar"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true"
             android:visibility="visible"
-            android:layout_marginBottom="@dimen/spacing_small"/>
+            android:layout_marginBottom="@dimen/spacing_small"
+            tools:visibility="visible"
+            />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:id="@+id/tvServerMessages"/>
+            android:id="@+id/tvServerMessages"
+            tools:text="server message"
+            />
     </LinearLayout>
 
 </RelativeLayout>

@@ -19,9 +19,12 @@ package com.slx.funstream.model;
 
 import java.util.List;
 
+/**
+ * Message history
+ */
 public class Result {
-	String message;
-	List<ChatMessage> chatMessages;
+	private String message;
+    private List<ChatMessage> chatMessages;
 
 	public String getMessage() {
 		return message;

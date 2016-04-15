@@ -17,7 +17,7 @@
 package com.slx.funstream.rest;
 
 
-import com.slx.funstream.rest.services.FunstreamApiService;
+import com.slx.funstream.rest.services.FunstreamApi;
 
 import okhttp3.OkHttpClient;
 import retrofit2.CallAdapter;
@@ -26,7 +26,7 @@ import retrofit2.Retrofit;
 
 
 public class FSRestClient {
-	private FunstreamApiService apiService;
+	private FunstreamApi apiService;
 
 
 	public FSRestClient(OkHttpClient client,
@@ -47,10 +47,10 @@ public class FSRestClient {
 //				.setEndpoint(twitchEndpoint)
 //				.build();
 
-		apiService = retrofit.create(FunstreamApiService.class);
+		apiService = retrofit.create(FunstreamApi.class);
 	}
 
-	public FunstreamApiService getApiService(){
+	public FunstreamApi getApiService(){
 		return apiService;
 	}
 }

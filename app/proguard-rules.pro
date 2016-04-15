@@ -43,9 +43,9 @@
 -keepattributes Signature
 -keepattributes Exceptions
 
--keepclasseswithmembers class * {
-    @retrofit.http.* <methods>;
-}
+#-keepclasseswithmembers class * {
+#    @retrofit2.http.* <methods>;
+#}
 -keep class com.slx.funstream.rest.model** { *; }
 -keep class com.slx.funstream.model** { *; }
 -dontwarn com.slx.funstream.auth.UserStore

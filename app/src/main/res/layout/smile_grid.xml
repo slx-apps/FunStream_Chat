@@ -14,17 +14,17 @@
   ~ ITS DERIVATIVES.
   -->
 
-<GridView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<GridView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/smile_grid_view"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:background="@android:color/transparent"
     android:cacheColorHint="@android:color/transparent"
     android:columnWidth="@dimen/keyboard_smile_grid_column_width"
     android:numColumns="auto_fit"
     android:scrollbars="vertical"
     android:horizontalSpacing="@dimen/spacing_small"
-    android:verticalSpacing="@dimen/spacing_small" >
-
-</GridView>
+    android:verticalSpacing="@dimen/spacing_small"
+    tools:listitem="@layout/smile_item"
+    />

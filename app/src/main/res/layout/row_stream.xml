@@ -15,58 +15,45 @@
   ~   limitations under the License.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/contentRoot"
-                android:padding="8dp"
-                android:background="@drawable/row_stream"
-                android:gravity="center_vertical">
-
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:id="@+id/linearLayout"
-        android:layout_toLeftOf="@+id/tvRating"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/tvName"
-            android:textSize="@dimen/text_size_normal"
-            android:layout_marginLeft="@dimen/spacing_big"
-            android:layout_marginRight="@dimen/spacing_big"
-            android:layout_centerVertical="true"
-            android:visibility="visible"
-            />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/tvStreamer"
-            android:textSize="@dimen/text_size_small"
-            android:layout_below="@+id/tvName"
-            android:layout_marginLeft="@dimen/spacing_big"
-            android:layout_marginRight="@dimen/spacing_big"
-            android:textStyle="bold"
-            android:visibility="visible"
-            />
-    </LinearLayout>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/contentRoot"
+    android:padding="8dp"
+    android:background="@drawable/row_stream"
+    android:gravity="center_vertical">
 
     <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:id="@+id/ivIcon"
+        tools:src="@mipmap/ic_launcher"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/ivStreamImage"
-        android:cropToPadding="false"
-        android:scaleType="centerCrop"
-        android:layout_alignTop="@+id/linearLayout"
-        android:layout_toRightOf="@+id/linearLayout"
-        android:layout_toEndOf="@+id/linearLayout"/>
+        android:id="@+id/tvName"
+        android:textSize="@dimen/text_size_normal"
+        android:layout_marginLeft="72dp"
+        android:layout_marginRight="72dp"
+        android:visibility="visible"
+        tools:text="Name"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvStreamer"
+        android:textSize="@dimen/text_size_small"
+        android:layout_marginLeft="72dp"
+        android:layout_marginRight="72dp"
+        android:textStyle="bold"
+        android:visibility="visible"
+        tools:text="Streamer"
+        android:layout_below="@+id/tvName" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -87,5 +74,7 @@
         android:layout_alignParentEnd="true"
         android:visibility="gone"
         android:background="@drawable/chat_message_user_background"
-        android:padding="@dimen/spacing_small"/>
+        android:padding="@dimen/spacing_small"
+        tools:text="9999"
+        />
 </RelativeLayout>

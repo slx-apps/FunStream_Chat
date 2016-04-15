@@ -25,11 +25,13 @@ import com.google.gson.JsonParseException;
 import com.slx.funstream.rest.model.Smile;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
-public class SmileDeserializer implements JsonDeserializer<Map<String, Smile>> {
+public class SmileDeserializer implements JsonDeserializer<List<Smile>> {
 	public static final String SMILE_ID = "id";
 	public static final String SMILE_TAB = "tab";
 	public static final String SMILE_LEVEL = "level";
@@ -38,30 +40,33 @@ public class SmileDeserializer implements JsonDeserializer<Map<String, Smile>> {
 //	public static final String SMILE_POS = "position";
 	public static final String SMILE_HEIGHT = "width";
 	public static final String SMILE_WIDTH = "height";
-
+    public static final String SMILE_ANIMATED = "animated";
 
 	private static final CharSequence PATTERN_COLOMN = ":";
-	@Override
-	public Map<String, Smile> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-		Map<String, Smile> smileys = new HashMap<>();
+
+    @Override
+	public List<Smile> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+		List<Smile> smileList = new ArrayList<>();
 		JsonArray smileysJson = json.getAsJsonArray();
 
-		for(int i = 0; i < smileysJson.size(); i++) {
+		for (int i = 0; i < smileysJson.size(); i++) {
 			JsonObject smileyJson = smileysJson.get(i).getAsJsonObject();
 			Smile smile = new Smile();
 			smile.setId(smileyJson.get(SMILE_ID).getAsInt());
 			smile.setTab(smileyJson.get(SMILE_TAB).getAsInt());
 			smile.setLevel(smileyJson.get(SMILE_LEVEL).getAsInt());
 			smile.setHeight(smileyJson.get(SMILE_HEIGHT).getAsInt());
-			smile.setCode(smileyJson.get(SMILE_CODE).getAsString());
+			String code = PATTERN_COLOMN + smileyJson.get(SMILE_CODE).getAsString() + PATTERN_COLOMN;
+			smile.setCode(code);
 			smile.setUrl(smileyJson.get(SMILE_URL).getAsString());
 //			smile.setPosition(smileJson.get(SMILE_POS).getAsInt());
 			smile.setHeight(smileyJson.get(SMILE_HEIGHT).getAsInt());
 			smile.setWidth(smileyJson.get(SMILE_WIDTH).getAsInt());
+            smile.setAnimated(smileyJson.get(SMILE_ANIMATED).getAsBoolean());
 
-			smileys.put(PATTERN_COLOMN + smile.getCode() + PATTERN_COLOMN, smile);
+			smileList.add(smile);
 		}
 
-		return smileys;
+		return smileList;
 	}
 }

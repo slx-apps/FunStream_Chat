@@ -24,8 +24,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
+import com.slx.funstream.App;
 import com.slx.funstream.R;
-import com.slx.funstream.di.Injector;
 import com.slx.funstream.rest.model.Smile;
 import com.slx.funstream.ui.chat.SmileGridView.OnSmileClickListener;
 import com.squareup.picasso.Picasso;
@@ -50,7 +50,7 @@ public class SmileAdapter extends ArrayAdapter<Smile> {
 
 	public SmileAdapter(Context context, List<Smile> data) {
 		super(context, R.layout.smile_item, data);
-		Injector.INSTANCE.getApplicationComponent().inject(this);
+		App.applicationComponent().inject(this);
 	}
 
 	public void setSmileClickListener(OnSmileClickListener listener){

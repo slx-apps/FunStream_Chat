@@ -27,10 +27,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.slx.funstream.App;
 import com.slx.funstream.R;
 import com.slx.funstream.adapters.StreamListFragmentAdapter;
 import com.slx.funstream.auth.UserStore;
-import com.slx.funstream.di.Injector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,10 +55,11 @@ public class StreamsContainerFragment extends Fragment {
 	public static final int TYPE_LIST_STREAMS = 0;
 	public static final int TYPE_LIST_CHANNELS = 1;
 	public static final int TYPE_LIST_FAVORITE = 2;
+	public static final int TYPE_LIST_ROOMS = 3;
+
 	private StreamListFragmentAdapter mPagerAdapter;
 
 	public static List<String> sChannels = new ArrayList<>();
-
 	static {
 		sChannels.add("main");
 		sChannels.add("admin");
@@ -82,7 +83,7 @@ public class StreamsContainerFragment extends Fragment {
 	@Override
 	public void onAttach(Context context) {
 		super.onAttach(context);
-		Injector.INSTANCE.getApplicationComponent().inject(this);
+		App.applicationComponent().inject(this);
 	}
 
 	@Override
@@ -91,15 +92,12 @@ public class StreamsContainerFragment extends Fragment {
 
 		mTabs.add(new ChatTabItem(getString(R.string.tab_title_streams), TYPE_LIST_STREAMS));
 		mTabs.add(new ChatTabItem(getString(R.string.tab_title_channels), TYPE_LIST_CHANNELS));
+		//mTabs.add(new ChatTabItem(getString(R.string.tab_title_rooms), TYPE_LIST_ROOMS));
 		//if(userStore.isUserLoggedIn()) mTabs.add(new ChatTabItem(getString(R.string.tab_title_favorites), TYPE_LIST_FAVORITE));
 
 
 		mPagerAdapter = new StreamListFragmentAdapter(getChildFragmentManager(), mTabs);
 
-		// Check whether we're recreating a previously destroyed instance
-//		if (savedInstanceState != null) {
-//			//TODO handle filter
-//		}
 
 		// Option menu
 		setHasOptionsMenu(true);
@@ -121,7 +119,6 @@ public class StreamsContainerFragment extends Fragment {
 		tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 		tabLayout.setTabMode(TabLayout.MODE_FIXED);
 		tabLayout.setupWithViewPager(viewpager);
-		//initializeFilterBox();
 	}
 
 	@Override
@@ -144,8 +141,8 @@ public class StreamsContainerFragment extends Fragment {
 			mFragmentType = frag_type;
 		}
 
-		public ChatListFragment createFragment() {
-			return ChatListFragment.newInstance(getFragmentType());
+		public ChannelListFragment createFragment() {
+			return ChannelListFragment.newInstance(getFragmentType());
 		}
 
 		public int getFragmentType() {

@@ -22,10 +22,10 @@ import com.google.gson.annotations.SerializedName;
 public class Stream {
 
 	@SerializedName("owner")
-	Streamer streamer;
-	String name;
-	Boolean adult;
-	Long rating;
+	private Streamer streamer;
+	private String name;
+	private Boolean adult;
+	private int rating;
 
     public Stream() {}
 
@@ -41,7 +41,7 @@ public class Stream {
 		return adult;
 	}
 
-	public Long getRating() {
+	public int getRating() {
 		return rating;
 	}
 

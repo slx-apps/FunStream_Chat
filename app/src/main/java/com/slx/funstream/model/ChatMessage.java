@@ -20,13 +20,13 @@ package com.slx.funstream.model;
 import com.slx.funstream.utils.TextUtils;
 
 public class ChatMessage {
-	long id;
-	String channel;
-	ChatUser from;
-	ChatUser to;
-	String text;
-	String time;
-	String type;
+	private long id;
+	private String channel;
+	private ChatUser from;
+	private ChatUser to;
+	private String text;
+	private String time;
+	private String type;
 
 	public long getId() {
 		return id;

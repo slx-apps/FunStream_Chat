@@ -15,11 +15,15 @@
   ~   limitations under the License.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/login_root"
-                android:background="@color/primary_dark">
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:id="@+id/login_root"
+	android:background="@color/primary_dark"
+	tools:context=".ui.login.LoginActivity"
+	>
 
 	<include
 		android:layout_width="match_parent"
@@ -32,7 +36,9 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:id="@+id/container"
-        android:layout_below="@+id/toolbar">
+        android:layout_below="@+id/toolbar"
+        tools:layout="@layout/fragment_login"
+        >
 	</FrameLayout>
 
 </RelativeLayout>

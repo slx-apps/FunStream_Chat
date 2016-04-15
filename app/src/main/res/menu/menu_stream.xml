@@ -28,10 +28,12 @@
 	      android:orderInCategory="90"
 	      android:title="@string/log_in"
 	      android:icon="@drawable/ic_account"
-	      app:showAsAction="ifRoom|withText" />
+	      app:showAsAction="ifRoom|withText"
+        />
 
 	<item android:id="@+id/action_settings"
 	      android:title="@string/action_settings"
 	      android:orderInCategory="100"
-	      app:showAsAction="never"/>
+	      app:showAsAction="never"
+		/>
 </menu>

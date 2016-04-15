@@ -51,15 +51,15 @@ public final class ChatApiUtils {
 	public static final String CHAT_CHANNEL_MAIN = "main";
 	public static final String CHAT_CHANNEL_ADMIN = "admin";
 
-	public static final String CHAT_URL = "http://funstream.tv";
-	public static final String CHAT_WS_URL = "wss://funstream.tv/socket.io/?EIO=3&transport=websocket";
+	public static final String CHAT_URL = "http://chat.funstream.tv";
+	public static final String CHAT_WS_URL = "wss://chat.funstream.tv/socket.io/?EIO=3&transport=websocket";
 
 	public static final String CHAT_EVENT_USER_JOINED = "/chat/user/join";
 	public static final String CHAT_EVENT_USER_LEAVED = "/chat/user/leave";
 
 	public static final String CHAT_USER_LIST = "/chat/channel/list";
 
-	public static final int DEFAULT_AMOUNT_MESSAGES = 100;
+	public static final int DEFAULT_AMOUNT_MESSAGES = 50;
 //	public static final String DEFAULT_DIRECTION_MESSAGES = "up";
 
 	public static final long CHANNEL_MAIN = -1L;

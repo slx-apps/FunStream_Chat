@@ -73,4 +73,5 @@
   <string name="prefs_chat_smiley">Показувати смайли</string>
   <string name="prefs_chat_smiley_summary">Показувати смайли в чатi</string>
   <string name="tab_title_favorites">Обране</string>
+  <string name="tab_title_rooms">Кімнати</string>
 </resources>

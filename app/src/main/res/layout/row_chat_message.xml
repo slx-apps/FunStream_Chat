@@ -16,11 +16,12 @@
   -->
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="@dimen/spacing_normal"
-                android:id="@+id/messageRoot"
-                android:background="@drawable/row_chat_message">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="@dimen/spacing_normal"
+    android:id="@+id/messageRoot"
+    android:background="@drawable/row_chat_message">
 
     <TextView
         android:layout_width="wrap_content"
@@ -30,7 +31,9 @@
         android:paddingLeft="@dimen/spacing_smallest"
         android:textColor="#222"
         android:background="@drawable/chat_message_user_background"
-        android:paddingRight="@dimen/spacing_smallest"/>
+        android:paddingRight="@dimen/spacing_smallest"
+        tools:text="From"
+        />
 
     <TextView
         android:layout_width="wrap_content"
@@ -43,7 +46,9 @@
         android:layout_marginStart="@dimen/spacing_big"
         android:textSize="@dimen/text_size_small"
         android:textColor="#222"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        tools:text="To"
+        />
 
     <TextView
         android:layout_width="match_parent"
@@ -57,6 +62,7 @@
         android:padding="2dp"
         android:textColor="#222"
         android:autoLink="web|email"
+        tools:text="Text message"
 	    />
 
 </RelativeLayout>
