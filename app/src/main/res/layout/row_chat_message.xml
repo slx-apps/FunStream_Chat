@@ -59,10 +59,12 @@
         android:layout_alignParentStart="true"
         android:layout_marginTop="@dimen/spacing_smallest"
         android:textSize="@dimen/text_size_smaller"
-        android:padding="2dp"
         android:textColor="#222"
         android:autoLink="web|email"
         tools:text="Text message"
-	    />
+        android:paddingTop="6dp"
+        android:paddingLeft="2dp"
+        android:paddingRight="2dp"
+        android:paddingBottom="2dp" />
 
 </RelativeLayout>

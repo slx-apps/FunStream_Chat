@@ -38,8 +38,8 @@ public class SmileDeserializer implements JsonDeserializer<List<Smile>> {
 	public static final String SMILE_CODE = "code";
 	public static final String SMILE_URL = "url";
 //	public static final String SMILE_POS = "position";
-	public static final String SMILE_HEIGHT = "width";
-	public static final String SMILE_WIDTH = "height";
+	public static final String SMILE_HEIGHT = "height";
+	public static final String SMILE_WIDTH = "width";
     public static final String SMILE_ANIMATED = "animated";
 
 	private static final CharSequence PATTERN_COLOMN = ":";

@@ -18,10 +18,12 @@ package com.slx.funstream.model;
 
 
 public class SimpleToken {
-	long id;
-	String ip;
-//	String userAgent;
-	long exp;
+	private long id;
+	private String ip;
+//	private String userAgent;
+	private long exp;
+
+	public SimpleToken() {}
 
 	public long getId() {
 		return id;
@@ -33,5 +35,14 @@ public class SimpleToken {
 
 	public long getExp() {
 		return exp;
+	}
+
+	@Override
+	public String toString() {
+		return "SimpleToken{" +
+				"id=" + id +
+				", ip='" + ip + '\'' +
+				", exp=" + exp +
+				'}';
 	}
 }

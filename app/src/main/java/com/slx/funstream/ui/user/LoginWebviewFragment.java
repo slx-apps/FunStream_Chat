@@ -14,14 +14,13 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.ui.login;
+package com.slx.funstream.ui.user;
 
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,14 +30,20 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
+import com.slx.funstream.App;
 import com.slx.funstream.R;
-import com.slx.funstream.ui.login.LoginFragment.LoginHandler;
+import com.slx.funstream.rest.services.FunstreamApi;
+import com.slx.funstream.ui.user.LoginFragment.LoginHandler;
+import com.trello.rxlifecycle.components.support.RxFragment;
+
+import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class LoginWebviewFragment extends Fragment {
+public class LoginWebviewFragment extends RxFragment {
+	private static final String TAG = "LoginWebviewFragment";
 	private static final String KEY_URI = "login.uri";
 
 
@@ -46,6 +51,9 @@ public class LoginWebviewFragment extends Fragment {
 	ProgressBar mProgressBar;
 	@Bind(R.id.fragment_login_web_view)
 	WebView mWebView;
+
+    @Inject
+    FunstreamApi api;
 
 	private Uri mUri;
 	private LoginHandler callback;
@@ -69,6 +77,7 @@ public class LoginWebviewFragment extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mUri = getArguments().getParcelable(KEY_URI);
+        App.applicationComponent().inject(this);
 	}
 
 
@@ -80,7 +89,53 @@ public class LoginWebviewFragment extends Fragment {
 		return v;
 	}
 
-	@SuppressLint("SetJavaScriptEnabled")
+//    @Override
+//    public void onStart() {
+//        super.onStart();
+//
+//        rx.Observable
+//                .interval(5000, TimeUnit.SECONDS)
+//                .compose(bindToLifecycle())
+//                .subscribe(new Subscriber<Long>() {
+//                    @Override
+//                    public void onCompleted() {
+//
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    @Override
+//                    public void onNext(Long aLong) {
+//
+//                    }
+//                });
+//
+//        api.getTokenObs(new OAuthResponse(oAuthCode))
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .compose(bindToLifecycle())
+//                .subscribe(new Subscriber<OAuthResponse>() {
+//                    @Override
+//                    public void onCompleted() {
+//
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    @Override
+//                    public void onNext(OAuthResponse oAuthResponse) {
+//
+//                    }
+//                });
+//    }
+
+    @SuppressLint("SetJavaScriptEnabled")
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
@@ -89,7 +144,7 @@ public class LoginWebviewFragment extends Fragment {
 		settings.setDomStorageEnabled(true);
 //		settings.setBuiltInZoomControls(true);
 //		settings.setLoadWithOverviewMode(true);
-//		settings.setUseWideViewPort(true);
+		settings.setUseWideViewPort(true);
 //		settings.setDatabaseEnabled(true);
 		mWebView.setWebChromeClient(new WebChromeClient() {
 			public void onProgressChanged(WebView webView, int newProgress) {
@@ -129,6 +184,6 @@ public class LoginWebviewFragment extends Fragment {
 
 	@OnClick(R.id.btNext)
 	void onCredsEntered(){
-		if(callback != null) callback.onCredsEntered();
+		if (callback != null) callback.onCredsEntered();
 	}
 }

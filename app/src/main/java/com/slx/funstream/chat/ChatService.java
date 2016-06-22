@@ -25,13 +25,16 @@ import android.util.Log;
 
 import com.slx.funstream.App;
 import com.slx.funstream.model.ChatMessage;
+import com.slx.funstream.model.Message;
+import com.slx.funstream.model.SystemMessage;
 import com.slx.funstream.ui.chat.ChatFragment;
 
 import javax.inject.Inject;
 
+import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
-public class ChatService extends Service implements ChatServiceInterface {
+public class ChatService extends Service {
 	private static final String TAG = "ChatService";
 	private LocalBinder mLocalBinder = new LocalBinder();
 
@@ -70,38 +73,31 @@ public class ChatService extends Service implements ChatServiceInterface {
 		presenter.setView(null);
 	}
 
-    @Override
     public void connectChat(long channelId) {
         presenter.connect(channelId);
     }
 
-    @Override
     public void disconnectChat() {
         presenter.disconnect();
     }
 
-    @Override
     public void joinChannel(long channel) {
         presenter.joinChannel(channel);
     }
 
-    @Override
     public void leaveChannel(long channel) {
         presenter.leaveChannel(channel);
     }
 
-    @Override
     public void sendMessage(ChatMessage newMessage) {
         presenter.sendMessage(newMessage);
     }
 
-    @Override
     public void loginChat() {
         presenter.loginChat();
     }
 
-	@Override
-	public BehaviorSubject<ChatMessage> getChatMessagesObservable() {
+	public Observable<Message> getChatMessagesObservable() {
 		return presenter.getChatMessagesObservable();
 	}
 

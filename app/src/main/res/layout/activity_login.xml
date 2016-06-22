@@ -22,7 +22,7 @@
 	android:layout_height="match_parent"
 	android:id="@+id/login_root"
 	android:background="@color/primary_dark"
-	tools:context=".ui.login.LoginActivity"
+	tools:context=".ui.user.LoginActivity"
 	>
 
 	<include

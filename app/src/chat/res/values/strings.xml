@@ -30,7 +30,7 @@
 
 	<string name="activity_login_prompt_username">Username</string>
 	<string name="activity_login_prompt_password">Password</string>
-	<string name="log_in">Log in</string>
+	<string name="log_in">Log in via Browser</string>
 	<string name="log_in_from_site">Log in via browser (OAuth)</string>
 	<string name="log_in_from_site_desc">* You do not need enter your credentials if you\'re using OAuth</string>
 
@@ -317,6 +317,11 @@
 		</TT>
 	</string>
 	<string name="service_chat_label" translatable="false">Chat Service</string>
-
+	<string name="auth_log_out">Log out</string>
+	<string name="auth_user_account">Account</string>
+    <string name="user_account_label">You are signed in as :</string>
+    <string name="user_expire_label">Token expires in :</string>
+	<string name="auth_dialog_help_title">Authentication</string>
+    <string name="auth_dialog_help_desc">Enter your login password and click on Confirm button.</string>
 
 </resources>

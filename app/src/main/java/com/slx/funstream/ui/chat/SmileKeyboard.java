@@ -154,24 +154,24 @@ public class SmileKeyboard extends AppCompatPopupWindow {
 
 	public void setSizeForSoftKeyboard() {
 		View view = contentRoot.get();
-		contentRoot.get().getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+		view.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
         	Rect r = new Rect();
-			contentRoot.get().getWindowVisibleDisplayFrame(r);
+			view.getWindowVisibleDisplayFrame(r);
 
-			int screenHeight = contentRoot.get().getRootView().getHeight();
+			int screenHeight = view.getRootView().getHeight();
 			int heightDifference = screenHeight - (r.bottom - r.top);
-			int resourceId = context.getResources()
-					.getIdentifier("status_bar_height",
+			int resourceId = context.getResources().getIdentifier("status_bar_height",
 							"dimen", "android");
 			if (resourceId > 0) {
-				heightDifference -= context.getResources()
-						.getDimensionPixelSize(resourceId);
+				heightDifference -= context.getResources().getDimensionPixelSize(resourceId);
 			}
 			if (heightDifference > 100) {
-				softKeyBoardHeight = heightDifference;
+				softKeyBoardHeight = heightDifference - 150;// ~150 height of bottom buttons
+                // if soft keyboard not displayed
+				if (softKeyBoardHeight < 0) softKeyBoardHeight = 0;
 				setSize(softKeyBoardHeight, LayoutParams.MATCH_PARENT);
 				if (!isOpened) {
-					if(onSoftKeyboardOpenCloseListener != null)
+					if (onSoftKeyboardOpenCloseListener != null)
 						onSoftKeyboardOpenCloseListener.onKeyboardOpen(softKeyBoardHeight);
 				}
 				isOpened = true;
@@ -179,10 +179,9 @@ public class SmileKeyboard extends AppCompatPopupWindow {
 					showAtBottom();
 					pendingOpen = false;
 				}
-			}
-			else{
+			} else{
 				isOpened = false;
-				if (onSoftKeyboardOpenCloseListener!=null)
+				if (onSoftKeyboardOpenCloseListener != null)
 					onSoftKeyboardOpenCloseListener.onKeyboardClose();
 			}
         });

@@ -14,7 +14,7 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.ui.login;
+package com.slx.funstream.ui.user;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -67,7 +67,9 @@ import static com.slx.funstream.rest.APIUtils.OAUTH_BROWSER_LINK;
 
 
 public class LoginFragment extends RxFragment {
-	public static final String FIELD_USERID = "id";
+    private static final String TAG = "LoginFragment";
+
+    public static final String FIELD_USERID = "id";
 	public static final String FIELD_USERNAME = "name";
 	public static final String FIELD_TOKEN = "token";
 
@@ -155,6 +157,8 @@ public class LoginFragment extends RxFragment {
 			return handled;
 		});
 
+        btOAuthLogin.setEnabled(false);
+
 //		loginClick
 //				.subscribe()
 
@@ -170,15 +174,57 @@ public class LoginFragment extends RxFragment {
 	@Override
 	public void onStart() {
 		super.onStart();
-		// Retrieve code from shared preferences
-		oAuthCode = prefUtils.getUserCode();
-		// Only if code exists
-		if(oAuthCode != null){
-			// Disable button
-			btOAuthLogin.setEnabled(false);
-			//showProgressDialog();
-			getToken();
-		}
+//		// Retrieve code from shared preferences
+//		oAuthCode = prefUtils.getUserCode();
+//		// Only if code exists
+//		if(oAuthCode != null){
+//			// Disable button
+//			btOAuthLogin.setEnabled(false);
+//			//showProgressDialog();
+//			getToken();
+//		}
+
+        // Check if connection is present and working
+        if (!NetworkUtils.isNetworkConnectionPresent(getContext())) {
+            Snackbar.make(loginRoot, getString(R.string.error_no_connection), Snackbar.LENGTH_LONG)
+                    .setAction(R.string.error_loading_action, view -> {
+                        getToken();
+                    })
+                    .show();
+            return;
+        }
+
+        restClient.getApiService().getPermissionCodeObs(new OAuthRequest(BuildConfig.APP_KEY))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .compose(bindToLifecycle())
+                .subscribe(new Subscriber<OAuthResponse>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.d(TAG, "Get Permission code completed");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                        showErrorLoginMessage();
+                    }
+
+                    @Override
+                    public void onNext(OAuthResponse oAuthResponse) {
+                        Log.d(TAG, "permissionCode->Next: " + oAuthResponse);
+
+                        if (!isEmpty(oAuthResponse.getCode())) {
+                            btOAuthLogin.setEnabled(true);
+                            // Retrieve code from response
+                            oAuthCode = oAuthResponse.getCode();
+                            // Save code to SP
+                            prefUtils.setUserCode(oAuthCode);
+                        } else {
+                            showErrorLoginMessage();
+                        }
+                    }
+                });
 	}
 
 	@Override
@@ -203,6 +249,10 @@ public class LoginFragment extends RxFragment {
 	 */
 	@OnClick(R.id.btOAuthLogin)
 	void loginOAuth() {
+        Log.d(TAG, "loginOAuth: " + oAuthCode);
+        // Start browser with code
+        startBrowser(context, Uri.parse(OAUTH_BROWSER_LINK + oAuthCode));
+
 //		// Check if connection is present and working
 //		if(!NetworkUtils.isNetworkConnectionPresent(this)){
 //			Snackbar.make(loginRoot, getString(R.string.error_no_connection), Snackbar.LENGTH_LONG)
@@ -237,46 +287,6 @@ public class LoginFragment extends RxFragment {
 ////				pbLogin.setVisibility(View.VISIBLE);
 //			}
 //		});
-
-		// Check if connection is present and working
-		if(!NetworkUtils.isNetworkConnectionPresent(getContext())){
-			Snackbar.make(loginRoot, getString(R.string.error_no_connection), Snackbar.LENGTH_LONG)
-					.setAction(R.string.error_loading_action, view -> {
-						getToken();
-					})
-					.show();
-			return;
-		}
-
-		restClient.getApiService().getPermissionCodeObs(new OAuthRequest(BuildConfig.APP_KEY))
-				.subscribeOn(Schedulers.io())
-				.observeOn(AndroidSchedulers.mainThread())
-				.compose(bindToLifecycle())
-				.subscribe(new Subscriber<OAuthResponse>() {
-					@Override
-					public void onCompleted() {
-						Log.i(LogUtils.TAG, "Get Permission code completed");
-					}
-
-					@Override
-					public void onError(Throwable e) {
-						showErrorLoginMessage();
-					}
-
-					@Override
-					public void onNext(OAuthResponse oAuthResponse) {
-						if (!isEmpty(oAuthResponse.getCode())) {
-							// Retrieve code from response
-							oAuthCode = oAuthResponse.getCode();
-							// Save code to SP
-							prefUtils.setUserCode(oAuthCode);
-							// Start browser with code
-							startBrowser(context, Uri.parse(OAUTH_BROWSER_LINK + oAuthCode));
-						} else {
-							showErrorLoginMessage();
-						}
-					}
-				});
 	}
 
 	@OnClick(R.id.bt_log_in)

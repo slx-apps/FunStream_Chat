@@ -70,6 +70,8 @@ import com.slx.funstream.chat.events.ChatUserListEvent;
 import com.slx.funstream.chat.events.SmileLoadEvent;
 import com.slx.funstream.model.ChatMessage;
 import com.slx.funstream.model.ChatUser;
+import com.slx.funstream.model.Message;
+import com.slx.funstream.model.SystemMessage;
 import com.slx.funstream.rest.model.ChatListRequest;
 import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.rest.model.Smile;
@@ -177,8 +179,9 @@ public class ChatFragment extends RxFragment
 
     // Smiley image spansText field
     private List<ImageSpan> imageSpans = new LinkedList<>();
-    private List<ChatMessage> chatMessages = new LinkedList<>();
+    private List<Message> chatMessages = new LinkedList<>();
     private CurrentUser currentUser;
+	private int smileSizeMultiplier;
 
 
 	public ChatFragment() {
@@ -219,7 +222,7 @@ public class ChatFragment extends RxFragment
 		context.startService(startIntent);
 
 		smileRepo.loadSmiles();
-
+		smileSizeMultiplier = context.getResources().getInteger(R.integer.smile_size_multiplier);
 		setHasOptionsMenu(true);
 	}
 
@@ -319,7 +322,7 @@ public class ChatFragment extends RxFragment
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.e(TAG, "rxBus onError: e="+e);
+                        e.printStackTrace();
                     }
 
                     @Override
@@ -356,14 +359,17 @@ public class ChatFragment extends RxFragment
                     @Override
                     public void onError(Throwable e) {
                         Log.e(TAG, "fetchUser onError " + e);
+						e.printStackTrace();
                     }
 
                     @Override
                     public void onNext(CurrentUser user) {
+                        Log.d(TAG, "userStore->fetchUser->onNext " + user);
                         currentUser = user;
                         if (currentUser != null && !isEmpty(user.getToken())) {
                             showChatControls(true);
                         }
+
 //                		// Check if user has logged in and token is exists
 //                		if (userStore.isUserLoggedIn()) {
 //                			// Show chat controls
@@ -463,7 +469,7 @@ public class ChatFragment extends RxFragment
 		int id = item.getItemId();
 
 		if (id == R.id.action_message_to_streamer) {
-			if (userStore.getCurrentUser() != null) {
+			if (currentUser != null) {
 				newMessage = new ChatMessage();
 				newMessage.setTo(new ChatUser(channel_id, channel_name));
 				if (!etNewMessage.isFocused()) etNewMessage.requestFocus();
@@ -521,7 +527,7 @@ public class ChatFragment extends RxFragment
 
 //	@OnClick(R.id.btLogin)
 //	protected void login() {
-//		startActivityForResult(new Intent(context, LoginActivity.class), REQUEST_CODE);
+//		startActivityForResult(new Intent(context, LoginActivity.class), RC_LOGIN);
 //	}
 
 	@OnClick(R.id.sendMessage)
@@ -578,7 +584,7 @@ public class ChatFragment extends RxFragment
 
                         @Override
                         public void onError(Throwable e) {
-
+                            e.printStackTrace();
                         }
 
                         @Override
@@ -602,7 +608,7 @@ public class ChatFragment extends RxFragment
 	}
 
 	private void makeTo(ChatUser user){
-		if (userStore.getCurrentUser() == null) return;
+		if (currentUser == null) return;
 
         newMessage = new ChatMessage();
 		newMessage.setTo(new ChatUser(user.getId(), user.getName()));
@@ -624,6 +630,7 @@ public class ChatFragment extends RxFragment
         EditTextTarget target = new EditTextTarget(start, end, etNewMessage, smile);
         targets.add(target);
         picasso.load(smile.getUrl())
+				.resize(smile.getWidth()*2, smile.getHeight()*2)
                 .into(target);
 
     }
@@ -764,7 +771,7 @@ public class ChatFragment extends RxFragment
 	}
 
 	@OnClick(R.id.ibSmiles)
-	void showSmileKeyboard() {
+	public void showSmileKeyboard() {
 		if (!smileKeyboard.isShowing()) {
 			if (smileKeyboard.isKeyBoardOpen()) {
 				smileKeyboard.showAtBottom();
@@ -806,35 +813,35 @@ public class ChatFragment extends RxFragment
         Log.d(TAG, "onServiceConnected");
         mService = ((ChatService.LocalBinder) service).getService();
 
-		if (mService != null) {
-			subscribeNewMessages();
-		}
+		subscribeNewMessages();
     }
 
 	private void subscribeNewMessages() {
-		mService.getChatMessagesObservable()
-				.observeOn(AndroidSchedulers.mainThread())
-                .compose(bindToLifecycle())
-                .subscribe(new Subscriber<ChatMessage>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.d(TAG, "onCompleted: ChatMessagesObservable");
-                    }
+        if (mService != null) {
+            mService.getChatMessagesObservable()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .compose(bindToLifecycle())
+                    .subscribe(new Subscriber<Message>() {
+                        @Override
+                        public void onCompleted() {
+                            Log.d(TAG, "onCompleted: ChatMessagesObservable");
+                        }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(TAG, "ChatMessagesObservable onError: e="+e);
-                    }
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.e(TAG, "ChatMessagesObservable onError: e="+e);
+                        }
 
-                    @Override
-                    public void onNext(ChatMessage chatMessage) {
+                        @Override
+                        public void onNext(Message message) {
 //                      Log.d(TAG, "onNext: ChatMessage " + chatMessage);
-						chatMessages.add(chatMessage);
-                        final int size = chatMessages.size();
-                        chatAdapter.notifyItemInserted(size);
-                        scrollToBottom();
-                    }
-                });
+                            chatMessages.add(message);
+                            final int size = chatMessages.size();
+                            chatAdapter.notifyItemInserted(size);
+                            scrollToBottom();
+                        }
+                    });
+        }
 	}
 
 	@Override

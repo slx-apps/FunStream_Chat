@@ -8,7 +8,7 @@ advancedVersioning {
     nameOptions {
         versionMajor 1
         versionMinor 5
-        versionPatch 0
+        versionPatch 1
     }
 
     outputOptions {

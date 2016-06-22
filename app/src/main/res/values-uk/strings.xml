@@ -74,4 +74,10 @@
   <string name="prefs_chat_smiley_summary">Показувати смайли в чатi</string>
   <string name="tab_title_favorites">Обране</string>
   <string name="tab_title_rooms">Кімнати</string>
+  <string name="auth_log_out">Логаут</string>
+  <string name="auth_user_account">Аккаунт</string>
+  <string name="user_account_label">Ви увійшли як :</string>
+  <string name="user_expire_label">Токен дійсний до :</string>
+  <string name="auth_dialog_help_title">Authentication</string>
+  <string name="auth_dialog_help_desc">Enter your login password and click on Confirm button</string>
 </resources>

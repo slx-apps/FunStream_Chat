@@ -41,4 +41,12 @@ public class Result {
 	public Result(List<ChatMessage> chatMessages) {
 		this.chatMessages = chatMessages;
 	}
+
+	@Override
+	public String toString() {
+		return "Result{" +
+				"message='" + message + '\'' +
+				", chatMessages=" + chatMessages +
+				'}';
+	}
 }

@@ -21,23 +21,18 @@ public class StreamsRepo {
     private static final String CATEGORY_TOP = "Top";
 
 
-    private FunstreamApi fsApi;
+    private FunstreamApi api;
 
     public StreamsRepo(FunstreamApi api) {
-        this.fsApi = api;
+        this.api = api;
     }
 
     public Observable<List<Stream>> getAllStreams(Category category) {
-        return fsApi.getStreams(new ContentRequest(STREAM, TYPE, category))
-                //.compose(bindToLifecycle());
-                //.filter(stream -> stream.get() > 500, 000)
-                //.flatMap(city -> weatherService.getCurrentWeather(city))
-                //.toSortedList((cw1, cw2) -> cw1.getCityName().compare(cw2.getCityName()))
-                .cache();
+        return api.getStreams(new ContentRequest(STREAM, TYPE, category));
     }
 
     public Observable<List<Category>> getAllCategories() {
-        return fsApi.getCategoriesWithSubs(new CategoryRequest(APIUtils.CONTENT_STREAM,
+        return api.getCategoriesWithSubs(new CategoryRequest(APIUtils.CONTENT_STREAM,
                 new CategoryOptions(true)))
                 .map(cat -> {
                     List<Category> cats = new ArrayList<>();

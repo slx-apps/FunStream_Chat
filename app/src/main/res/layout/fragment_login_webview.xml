@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_below="@id/fragment_login_progress_bar"
-            android:layout_above="@+id/btNext"/>
+            android:layout_alignParentBottom="true" />
 
     <Button
         android:layout_width="match_parent"
@@ -47,7 +47,8 @@
         android:id="@+id/btNext"
         android:layout_alignParentBottom="true"
         android:background="@drawable/selector_button_dark"
-        android:textColor="@color/white"/>
+        android:textColor="@color/white"
+        android:visibility="gone" />
 
 
 </RelativeLayout>

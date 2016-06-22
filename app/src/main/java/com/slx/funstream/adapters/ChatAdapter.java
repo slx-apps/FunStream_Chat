@@ -32,15 +32,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.slx.funstream.App;
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
+import com.slx.funstream.chat.ChatServicePresenter;
 import com.slx.funstream.chat.SmileRepo;
 import com.slx.funstream.model.ChatMessage;
 import com.slx.funstream.model.ChatUser;
+import com.slx.funstream.model.Message;
+import com.slx.funstream.model.SystemMessage;
 import com.slx.funstream.rest.model.Smile;
 import com.slx.funstream.utils.PrefUtils;
 import com.squareup.picasso.Picasso;
@@ -55,19 +59,18 @@ import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import rx.Subscriber;
 
 import static android.text.TextUtils.isEmpty;
 import static com.slx.funstream.chat.SmileRepo.SMILE_PATTERN;
 import static com.slx.funstream.utils.TextUtils.makeFrom;
 import static com.slx.funstream.utils.TextUtils.makeTo;
 
-public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder>
+public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		implements View.OnClickListener {
 	private static final String TAG = "ChatAdapter";
 	private static final int FROM_TWITCH = -100;
 	private static final int FROM_GG = -101;
-	private List<ChatMessage> mMessages;
+	private List<Message> mMessages;
 	private Context context;
 
 	private int primaryColor;
@@ -85,6 +88,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder>
 	@Inject
 	UserStore userStore;
 	private boolean isShowSmileys = true;
+    private int smileSizeMultiplier;
 
 	public void setOnChatMessageClickListener(OnChatMessageClick callback) {
 		this.callback = callback;
@@ -99,47 +103,69 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder>
 
 		primaryColor = ContextCompat.getColor(context, R.color.primary);
 		darkColor = ContextCompat.getColor(context, R.color.black);
+
+        smileSizeMultiplier = context.getResources().getInteger(R.integer.smile_size_multiplier);
 	}
 
 
 	@Override
-	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+	public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        switch (viewType) {
+            case ChatServicePresenter.MESSAGE_TYPE_CHAT:
+                final View view = LayoutInflater.from(context).inflate(R.layout.row_chat_message, parent, false);
+
+                final ChatMessageHolder chatMessageHolder = new ChatMessageHolder(view);
+                chatMessageHolder.messageRoot.setOnClickListener(this);
+                return chatMessageHolder;
+
+            case ChatServicePresenter.MESSAGE_TYPE_SYSTEM:
+                final View systemMessageView = LayoutInflater.from(context).inflate(R.layout.row_system_message, parent, false);
+                final SystemMessageHolder systemMessageHolder = new SystemMessageHolder(systemMessageView);
+                return systemMessageHolder;
+        }
 		final View view = LayoutInflater.from(context).inflate(R.layout.row_chat_message, parent, false);
 
-		final ViewHolder viewHolder = new ViewHolder(view);
-		viewHolder.messageRoot.setOnClickListener(this);
-		return viewHolder;
+		final ChatMessageHolder chatMessageHolder = new ChatMessageHolder(view);
+		chatMessageHolder.messageRoot.setOnClickListener(this);
+		return chatMessageHolder;
 	}
 
 	@Override
-	public void onBindViewHolder(ViewHolder holder, int position) {
-		// Reset
-		// clear after non-funstream chat messages disabling
-		holder.messageRoot.setEnabled(true);
-		// clear tw and gg icons
-		holder.tvFrom.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-		// clear conversation
-		holder.messageRoot.setBackgroundResource(0);
+	public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
+        final Message m = mMessages.get(position);
+
+        switch (m.getMessageType()) {
+            case ChatServicePresenter.MESSAGE_TYPE_CHAT:
+                ChatMessageHolder holder = (ChatMessageHolder) viewHolder;
+                ChatMessage message = (ChatMessage) m;
+
+                // Reset
+                // clear after non-funstream chat messages disabling
+                holder.messageRoot.setEnabled(true);
+                // clear tw and gg icons
+                holder.tvFrom.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+                // clear conversation
+                holder.messageRoot.setBackgroundResource(0);
 //		holder.tvText.setTextColor(darkColor);
 
-		final ChatMessage message = mMessages.get(position);
-		long fromId = message.getFrom().getId();
 
-		if( fromId == FROM_TWITCH || fromId == FROM_GG ){
-			if(fromId == FROM_TWITCH)  {
-				holder.tvFrom
-						.setCompoundDrawablesWithIntrinsicBounds(R.drawable.twitch, 0, 0, 0);
-			}
-			if(fromId == FROM_GG)  {
-				holder.tvFrom
-						.setCompoundDrawablesWithIntrinsicBounds(R.drawable.goodgame, 0, 0, 0);
-			}
+                long fromId = message.getFrom().getId();
 
-			// Disable row for non non-funstream chat messages
-			holder.messageRoot.setEnabled(false);
-		}
-		holder.setFrom(message.getFrom());
-		holder.setTo(message.getTo());
+                if (fromId == FROM_TWITCH || fromId == FROM_GG ) {
+                    if (fromId == FROM_TWITCH) {
+                        holder.tvFrom
+                                .setCompoundDrawablesWithIntrinsicBounds(R.drawable.twitch, 0, 0, 0);
+                    }
+                    if (fromId == FROM_GG) {
+                        holder.tvFrom
+                                .setCompoundDrawablesWithIntrinsicBounds(R.drawable.goodgame, 0, 0, 0);
+                    }
+
+                    // Disable row for non non-funstream chat messages
+                    holder.messageRoot.setEnabled(false);
+                }
+                holder.setFrom(message.getFrom());
+                holder.setTo(message.getTo());
 
 //		//	handle /me
 //		if(message.getText().contains("/me")){
@@ -148,28 +174,45 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder>
 //			holder.tvText.setTextColor(primaryColor);
 //		}
 
-		Spannable spannable = spannableFactory.newSpannable(message.getText());
-		holder.setMessage(spannable);
-		if(isShowSmileys) {
-			// Add smileys
-			addSmiles(spannable, holder.tvText);
-		}
-		// Add links
-		addLinks(spannable);
-		// Add Images
-		// Check if user allowed it
+                Spannable spannable = spannableFactory.newSpannable(message.getText());
+                holder.setMessage(spannable);
+                if (isShowSmileys) {
+                    // Add smileys
+                    addSmiles(spannable, holder.tvText);
+                }
+                // Add links
+                addLinks(spannable);
+                // Add Images
+                // Check if user allowed it
 //		if(prefUtils.isShowImages()){
-//			linksToImages(spannable, ((ViewHolder holder).tvText);
+//			linksToImages(spannable, ((ChatMessageHolder holder).tvText);
 //		}
 
-		// Set Tag
-		holder.messageRoot.setTag(holder);
+                // Set Tag
+                holder.messageRoot.setTag(holder);
+
+                break;
+
+            case ChatServicePresenter.MESSAGE_TYPE_SYSTEM:
+                SystemMessageHolder systemMessageHolder = (SystemMessageHolder) viewHolder;
+
+                systemMessageHolder.setMessage(m.getText());
+                break;
+        }
+
 	}
 
 	@Override
 	public int getItemCount() {
 		return mMessages != null ? mMessages.size() : 0;
 	}
+
+	@Override
+	public int getItemViewType(int position) {
+        Message message = mMessages.get(position);
+		return message.getMessageType();
+	}
+
 
 	private void addSmiles(Spannable spannable, TextView textView) {
 		Matcher matcher = SMILE_PATTERN.matcher(spannable);
@@ -190,6 +233,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder>
             if (smile != null) {
                 picasso
                         .load(smile.getUrl())
+						.resize(smile.getWidth() * smileSizeMultiplier, smile.getHeight() * smileSizeMultiplier)
                         .into(target);
             }
 		}
@@ -204,7 +248,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder>
 //		URLSpan[] spans = textView.getUrls();
 		URLSpan[] spans = spannable.getSpans(0, spannable.length(), URLSpan.class);
 		Log.d(TAG, "URLSpan[] size="+spans.length);
-		for(URLSpan span : spans) {
+		for (URLSpan span : spans) {
 			String url = span.getURL();
 			Log.d(TAG, "START: " + spannable.getSpanStart(span) +
 					"END: " + spannable.getSpanEnd(span) + " " + url);
@@ -219,7 +263,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder>
 		}
 	}
 
-	public static class ViewHolder extends RecyclerView.ViewHolder {
+	public static class ChatMessageHolder extends RecyclerView.ViewHolder {
 		@Bind(R.id.tvText)
 		TextView tvText;
 		@Bind(R.id.tvFrom)
@@ -229,7 +273,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder>
 		@Bind(R.id.messageRoot)
 		RelativeLayout messageRoot;
 
-		public ViewHolder(View itemView) {
+		public ChatMessageHolder(View itemView) {
 			super(itemView);
 			ButterKnife.bind(this, itemView);
 		}
@@ -254,9 +298,24 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder>
 				tvTo.setText(makeTo(user));
 			}
 		}
-
-
 	}
+
+    public static class SystemMessageHolder extends RecyclerView.ViewHolder {
+        @Bind(R.id.tvText)
+        TextView tvText;
+        @Bind(R.id.messageRoot)
+        LinearLayout messageRoot;
+
+        public SystemMessageHolder(View itemView) {
+            super(itemView);
+            ButterKnife.bind(this, itemView);
+        }
+
+        public void setMessage(CharSequence message) {
+            if (message == null) return;
+            tvText.setText(message);
+        }
+    }
 
 	private class ImageTarget implements Target {
 		int start;
@@ -327,14 +386,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder>
 		final int viewId = view.getId();
 		if (viewId == R.id.messageRoot) {
 			if (callback != null) {
-				ViewHolder holder = (ViewHolder) view.getTag();
-				callback.onChatMessageClicked(mMessages.get(holder.getLayoutPosition()));
+				ChatMessageHolder holder = (ChatMessageHolder) view.getTag();
+				callback.onChatMessageClicked((ChatMessage) mMessages.get(holder.getLayoutPosition()));
 			}
 		}
 	}
 
-	public void updateChatAdapter(List<ChatMessage> messages){
-		if(messages != null){
+	public void updateChatAdapter(List<Message> messages){
+		if (messages != null) {
 			mMessages = messages;
 			this.notifyDataSetChanged();
 		}

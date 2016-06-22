@@ -19,10 +19,11 @@ package com.slx.funstream.ui.streams;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
@@ -35,11 +36,11 @@ import com.slx.funstream.auth.UserStore;
 import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.ui.AppSettingsActivity;
 import com.slx.funstream.ui.chat.ChatFragment;
-import com.slx.funstream.ui.login.LoginActivity;
-import com.slx.funstream.ui.login.LoginFragment;
+import com.slx.funstream.ui.user.LoginActivity;
+import com.slx.funstream.ui.user.LoginFragment;
+import com.slx.funstream.ui.user.UserActivity;
 import com.slx.funstream.utils.PrefUtils;
 import com.slx.funstream.utils.Toaster;
-import com.trello.rxlifecycle.components.RxActivity;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import javax.inject.Inject;
@@ -52,9 +53,11 @@ import rx.android.schedulers.AndroidSchedulers;
 import static android.text.TextUtils.isEmpty;
 
 public class StreamActivity extends RxAppCompatActivity {
-	public static final String STREAMER_NAME = "streamer_name";
+    private static final String TAG = "StreamActivity";
+
+    public static final String STREAMER_NAME = "streamer_name";
 	public static final String STREAMER_ID = "streamer_id";
-	public static final int REQUEST_CODE = 101;
+	public static final int RC_LOGIN = 101;
 
 	@Bind(R.id.chat_container)
 	FrameLayout chatContainer;
@@ -73,6 +76,7 @@ public class StreamActivity extends RxAppCompatActivity {
 
 	private ChatFragment chatFragment;
 	private FragmentManager fm;
+    private CurrentUser user;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -103,43 +107,47 @@ public class StreamActivity extends RxAppCompatActivity {
 		}
 
 		chatFragment = createChatFragment();
+
+		userStore
+				.fetchUser()
+				.compose(bindToLifecycle())
+				.observeOn(AndroidSchedulers.mainThread())
+				.subscribe(new Subscriber<CurrentUser>() {
+					@Override
+					public void onCompleted() {
+                        Log.d(TAG, "UserStore->fetchUser->onCompleted");
+                    }
+
+					@Override
+					public void onError(Throwable e) {
+						e.printStackTrace();
+					}
+
+					@Override
+					public void onNext(CurrentUser currentUser) {
+						Log.d(TAG, "UserStore->fetchUser->onNext: " + currentUser);
+						user = currentUser;
+                        invalidateOptionsMenu();
+					}
+				});
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.menu_stream, menu);
+
+        MenuItem logInItem = menu.findItem(R.id.menu_log_in);
+        MenuItem userAccItem = menu.findItem(R.id.menu_user_account);
+        // Hide login button if user is not logged in
+        if (user == null || isEmpty(user.getToken())) {
+            logInItem.setVisible(true);
+            userAccItem.setVisible(false);
+        } else {
+            logInItem.setVisible(false);
+            userAccItem.setVisible(true);
+        }
+
 		return true;
-	}
-
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		// Hide login button if user is not logged in
-		userStore
-				.fetchUser()
-				.compose(bindToLifecycle())
-                .observeOn(AndroidSchedulers.mainThread())
-				.subscribe(new Subscriber<CurrentUser>() {
-					@Override
-					public void onCompleted() {
-
-					}
-
-					@Override
-					public void onError(Throwable e) {
-
-					}
-
-					@Override
-					public void onNext(CurrentUser user) {
-						if (user == null ||
-								isEmpty(user.getToken())) {
-							MenuItem menuItem = menu.findItem(R.id.menu_log_in);
-							menuItem.setVisible(true);
-						}
-					}
-				});
-
-		return super.onPrepareOptionsMenu(menu);
 	}
 
 	@Override
@@ -147,13 +155,13 @@ public class StreamActivity extends RxAppCompatActivity {
 		int id = item.getItemId();
 
 		if (id == R.id.menu_log_in) {
-			startActivityForResult(new Intent(this, LoginActivity.class), REQUEST_CODE);
+			startActivityForResult(new Intent(this, LoginActivity.class), RC_LOGIN);
 			return true;
 		}
-//		else if (id == R.id.reload_stream) {
-//			fetchStream(streamer_name);
-//			return true;
-//		}
+		else if (id == R.id.menu_user_account) {
+			startActivity(new Intent(this, UserActivity.class));
+			return true;
+		}
 		else if (id == R.id.action_settings) {
 			startActivity(new Intent(this, AppSettingsActivity.class));
 			return true;
@@ -176,7 +184,7 @@ public class StreamActivity extends RxAppCompatActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if(prefUtils.isScreenOn()){
+		if (prefUtils.isScreenOn()) {
 			getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		}
 	}
@@ -189,7 +197,7 @@ public class StreamActivity extends RxAppCompatActivity {
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == REQUEST_CODE) {
+		if (requestCode == RC_LOGIN) {
 			if (resultCode == RESULT_OK) {
 				if (data.hasExtra(LoginFragment.FIELD_TOKEN)
 						&& data.hasExtra(LoginFragment.FIELD_USERID)) {
@@ -204,7 +212,7 @@ public class StreamActivity extends RxAppCompatActivity {
 					user.setName(data.getStringExtra(LoginFragment.FIELD_USERNAME));
 					user.setToken(data.getStringExtra(LoginFragment.FIELD_TOKEN));
 					prefUtils.saveUser(user);
-					userStore.fetchUser();
+                    userStore.updateUser();
 					invalidateOptionsMenu();
 				}
 			}
@@ -218,4 +226,13 @@ public class StreamActivity extends RxAppCompatActivity {
 		ft.commit();
 		return chatFragment;
 	}
+
+    @Override
+    public void onBackPressed() {
+        Fragment fragment = fm.findFragmentById(R.id.chat_container);
+
+        if (fragment instanceof ChatFragment) {
+            ((ChatFragment) fragment).showSmileKeyboard();
+        }
+    }
 }

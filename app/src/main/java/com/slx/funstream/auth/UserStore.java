@@ -51,33 +51,41 @@ public class UserStore {
 		this.mGson = gson;
 		this.prefUtils = prefUtils;
         this.funstreamApi = funstreamApi;
-	}
 
-	public BehaviorSubject<CurrentUser> fetchUser() {
 		user = BehaviorSubject.create(prefUtils.getUser());
 
-        user
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<CurrentUser>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.d(TAG, "UserStore->fetchUser->onCompleted");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(TAG, "UserStore->fetchUser->onError " + e);
-                    }
-
-                    @Override
-                    public void onNext(CurrentUser user) {
-                        Log.d(TAG, "UserStore->fetchUser->onNext");
-                        currentUser = user;
-                    }
+        user.doOnNext(user -> {
+            Log.d(TAG, "UserStore: new user" + user);
+            currentUser = user;
         });
-		return user;
 	}
+
+	public Observable<CurrentUser> fetchUser() {
+//        user.subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Subscriber<CurrentUser>() {
+//                    @Override
+//                    public void onCompleted() {
+//                        Log.d(TAG, "UserStore->fetchUser->onCompleted");
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable e) {
+//                        Log.e(TAG, "UserStore->fetchUser->onError " + e);
+//                    }
+//
+//                    @Override
+//                    public void onNext(CurrentUser user) {
+//                        Log.d(TAG, "UserStore->fetchUser->onNext");
+//                        currentUser = user;
+//                    }
+//        });
+		return user.asObservable();
+	}
+
+    public void updateUser() {
+        user.onNext(prefUtils.getUser());
+    }
 
 	/**
 	 * Check if user's token has not been expired
@@ -90,11 +98,13 @@ public class UserStore {
 		//return isTokenExpire(token);
 	}
 
-	private SimpleToken parseToken(String token){
+    public static SimpleToken parseToken(String token, Gson gson) {
 		try {
 			SignedJWT signedJWT = (SignedJWT)JWTParser.parse(token);
 			Payload payload = signedJWT.getPayload();
-			return mGson.fromJson(payload.toString(), SimpleToken.class);
+            SimpleToken simpleToken = gson.fromJson(payload.toString(), SimpleToken.class);
+            Log.d(TAG, "parseToken: " + simpleToken);
+            return simpleToken;
 		} catch (java.text.ParseException e) {
 			Log.e(TAG, e.toString());
 		}

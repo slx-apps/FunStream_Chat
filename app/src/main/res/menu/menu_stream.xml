@@ -25,11 +25,18 @@
 	      app:showAsAction="ifRoom|withText" />
 -->
 	<item android:id="@+id/menu_log_in"
-	      android:orderInCategory="90"
-	      android:title="@string/log_in"
-	      android:icon="@drawable/ic_account"
-	      app:showAsAction="ifRoom|withText"
-        />
+		android:orderInCategory="90"
+		android:title="@string/log_in"
+		android:icon="@drawable/ic_account"
+		app:showAsAction="ifRoom|withText"
+	/>
+
+	<item android:id="@+id/menu_user_account"
+		android:orderInCategory="90"
+		android:title="@string/auth_user_account"
+		android:icon="@drawable/ic_menu_user"
+		app:showAsAction="ifRoom|withText"
+		/>
 
 	<item android:id="@+id/action_settings"
 	      android:title="@string/action_settings"

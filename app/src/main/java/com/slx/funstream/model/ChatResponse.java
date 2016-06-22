@@ -38,4 +38,12 @@ public class ChatResponse {
 	}
 
 	public ChatResponse() {}
+
+	@Override
+	public String toString() {
+		return "ChatResponse{" +
+				"status='" + status + '\'' +
+				", result=" + result +
+				'}';
+	}
 }

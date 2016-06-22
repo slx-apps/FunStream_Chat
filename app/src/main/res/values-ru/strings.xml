@@ -30,7 +30,7 @@
   <string name="error_stream_loading">Не удалось загрузить стрим</string>
   <string name="error_streams_loading">Не удалось загрузить стримы</string>
   <string name="error_username_required">Логин обязателен</string>
-  <string name="log_in">Войти</string>
+  <string name="log_in">Войти через браузер</string>
   <string name="log_in_error">Логин или пароль неверен</string>
   <string name="prefs_category_title_chat">Настройки чата</string>
   <string name="search">Поиск</string>
@@ -74,4 +74,10 @@
   <string name="prefs_chat_smiley_summary">Показывать смайлы в чате</string>
   <string name="tab_title_favorites">Избранное</string>
   <string name="tab_title_rooms">Комнаты</string>
+  <string name="auth_log_out">Выйти</string>
+  <string name="auth_user_account">Аккаунт</string>
+  <string name="user_account_label">Вы вошли как :</string>
+  <string name="user_expire_label">Токен действителен до :</string>
+  <string name="auth_dialog_help_title">Авторизация</string>
+  <string name="auth_dialog_help_desc">Введите логин и пароль и нажмите на кнопку Подтвердить. Приложение не сохраняет Ваш логин или пароль.</string>
 </resources>

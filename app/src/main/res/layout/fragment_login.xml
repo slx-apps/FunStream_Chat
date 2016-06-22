@@ -95,7 +95,8 @@
             android:id="@+id/btOAuthLogin"
             android:layout_weight="1"
             android:layout_marginLeft="32dp"
-            android:layout_marginRight="32dp"/>
+            android:layout_marginRight="32dp"
+            android:enabled="false" />
 
     </LinearLayout>
 
@@ -111,4 +112,19 @@
         android:padding="@dimen/spacing_big"
         android:textColor="@color/white"
         android:visibility="gone"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/auth_dialog_help_desc"
+        android:id="@+id/textView5"
+        android:layout_above="@+id/linearLayout2"
+        android:layout_marginBottom="16dp"
+        android:layout_toRightOf="@+id/linearLayout3"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:padding="16dp"
+        android:textSize="@dimen/text_size_normal"
+        android:gravity="center"
+        android:textColor="@color/primary_text_light" />
 </RelativeLayout>

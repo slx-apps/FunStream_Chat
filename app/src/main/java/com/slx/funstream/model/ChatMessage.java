@@ -19,14 +19,12 @@ package com.slx.funstream.model;
 
 import com.slx.funstream.utils.TextUtils;
 
-public class ChatMessage {
+public class ChatMessage extends Message {
 	private long id;
 	private String channel;
 	private ChatUser from;
 	private ChatUser to;
-	private String text;
 	private String time;
-	private String type;
 
 	public long getId() {
 		return id;
@@ -66,22 +64,6 @@ public class ChatMessage {
 
 	public void setChannel(long channelId) {
 		this.channel = TextUtils.setChatChannel(channelId);
-	}
-
-	public String getText() {
-		return text;
-	}
-
-	public void setText(String text) {
-		this.text = text;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
 	}
 
 	public ChatMessage() {
