@@ -205,7 +205,7 @@ public class ChatServicePresenter implements Presenter<ChatService> {
 
     public void loginChat() {
         Log.d(TAG, "loginChat");
-        if (mSocket != null) {
+        if (mSocket != null && user != null && user.getToken() != null) {
             try {
                 JSONObject login = new JSONObject();
                 login.put(CHAT_LOGIN_TOKEN, user.getToken());
