@@ -23,7 +23,6 @@ import android.graphics.Rect;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.AppCompatPopupWindow;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +30,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.ImageButton;
+import android.widget.PopupWindow;
 
 import com.slx.funstream.R;
 import com.slx.funstream.rest.model.Smile;
@@ -50,7 +50,7 @@ import java.util.List;
  *
  */
 
-public class SmileKeyboard extends AppCompatPopupWindow {
+public class SmileKeyboard extends PopupWindow {
 	private static final int MAX_TABS = 9;
 	private Context context;
 	private WeakReference<View> contentRoot;

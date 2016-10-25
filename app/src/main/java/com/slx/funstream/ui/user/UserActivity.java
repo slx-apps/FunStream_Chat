@@ -20,7 +20,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -28,10 +27,8 @@ import com.jakewharton.rxbinding.view.RxView;
 import com.slx.funstream.App;
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
-import com.slx.funstream.model.ChatUser;
 import com.slx.funstream.model.SimpleToken;
 import com.slx.funstream.rest.model.CurrentUser;
-import com.slx.funstream.rest.services.FunstreamApi;
 import com.slx.funstream.utils.PrefUtils;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
@@ -41,7 +38,7 @@ import java.util.Locale;
 
 import javax.inject.Inject;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -50,12 +47,12 @@ import rx.schedulers.Schedulers;
 public class UserActivity extends RxAppCompatActivity {
     private static final String TAG = "UserActivity";
 
-    @Bind(R.id.tvUserName)
+    @BindView(R.id.tvUserName)
     TextView tvUserName;
-    @Bind(R.id.tvExpire)
+    @BindView(R.id.tvExpire)
     TextView tvExpire;
 
-    @Bind(R.id.btLogOut)
+    @BindView(R.id.btLogOut)
     Button btLogOut;
 
     @Inject

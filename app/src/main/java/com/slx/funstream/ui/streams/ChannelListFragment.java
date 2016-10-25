@@ -24,8 +24,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -60,22 +58,20 @@ import com.slx.funstream.utils.PrefUtils;
 import com.squareup.picasso.Picasso;
 import com.trello.rxlifecycle.components.support.RxFragment;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-import static android.text.TextUtils.isEmpty;
 import static com.slx.funstream.ui.streams.StreamsContainerFragment.TYPE_LIST_FAVORITE;
 import static com.slx.funstream.ui.streams.StreamsContainerFragment.TYPE_LIST_STREAMS;
 import static com.slx.funstream.utils.NetworkUtils.isNetworkConnectionPresent;
@@ -87,11 +83,11 @@ public class ChannelListFragment extends RxFragment implements OnChatChannelClic
     public static final String KEY_CHAT_FRAGMENT_TYPE = "chat_fragment_type";
 	public static final int SEARCH_VIEW_TIMEOUT = 400;
 
-	@Bind(R.id.rvStreams)
+	@BindView(R.id.rvStreams)
 	RecyclerView rvStreams;
-	@Bind(R.id.swipeContainer)
+	@BindView(R.id.swipeContainer)
 	SwipeRefreshLayout swipeContainer;
-	@Bind(R.id.rootView)
+	@BindView(R.id.rootView)
 	LinearLayout rootView;
 
 	private int fragType;
@@ -115,6 +111,7 @@ public class ChannelListFragment extends RxFragment implements OnChatChannelClic
 	private Toolbar mToolbar;
 	private Category category;
 	private List<Category> categories;
+	private Unbinder unbinder;
 
 	public ChannelListFragment() {
 	}
@@ -167,7 +164,7 @@ public class ChannelListFragment extends RxFragment implements OnChatChannelClic
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.chat_list_layout, container, false);
-		ButterKnife.bind(this, view);
+		unbinder = ButterKnife.bind(this, view);
 		return view;
 	}
 
@@ -310,7 +307,7 @@ public class ChannelListFragment extends RxFragment implements OnChatChannelClic
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
-		ButterKnife.unbind(this);
+		unbinder.unbind();
 	}
 
 	View.OnClickListener reloadListener = view -> fetchStreams(category);

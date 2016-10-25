@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import rx.Observable;
 import rx.Subscriber;
@@ -54,7 +54,7 @@ public class LoginActivity extends RxAppCompatActivity implements LoginFragment.
     public static final String FIELD_USERNAME = "name";
     public static final String FIELD_TOKEN = "token";
 
-	@Bind(R.id.toolbar)
+	@BindView(R.id.toolbar)
 	Toolbar toolbar;
 
     @Inject

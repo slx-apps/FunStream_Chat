@@ -38,18 +38,19 @@ import com.trello.rxlifecycle.components.support.RxFragment;
 
 import javax.inject.Inject;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 
 public class LoginWebviewFragment extends RxFragment {
 	private static final String TAG = "LoginWebviewFragment";
 	private static final String KEY_URI = "login.uri";
 
 
-	@Bind(R.id.fragment_login_progress_bar)
+	@BindView(R.id.fragment_login_progress_bar)
 	ProgressBar mProgressBar;
-	@Bind(R.id.fragment_login_web_view)
+	@BindView(R.id.fragment_login_web_view)
 	WebView mWebView;
 
     @Inject
@@ -57,6 +58,7 @@ public class LoginWebviewFragment extends RxFragment {
 
 	private Uri mUri;
 	private LoginHandler callback;
+	private Unbinder unbinder;
 
 	public static LoginWebviewFragment newInstance(Uri uri) {
 
@@ -85,7 +87,7 @@ public class LoginWebviewFragment extends RxFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		View v = inflater.inflate(R.layout.fragment_login_webview, container, false);
-		ButterKnife.bind(this, v);
+        unbinder = ButterKnife.bind(this, v);
 		return v;
 	}
 
@@ -179,7 +181,7 @@ public class LoginWebviewFragment extends RxFragment {
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
-		ButterKnife.unbind(this);
+		unbinder.unbind();
 	}
 
 	@OnClick(R.id.btNext)

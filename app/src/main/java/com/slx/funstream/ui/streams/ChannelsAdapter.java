@@ -17,7 +17,6 @@
 package com.slx.funstream.ui.streams;
 
 
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,9 +33,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class ChannelsAdapter extends RecyclerView.Adapter<ChannelsAdapter.ViewHolder> implements View.OnClickListener {
@@ -116,17 +114,17 @@ public class ChannelsAdapter extends RecyclerView.Adapter<ChannelsAdapter.ViewHo
 	}
 
 	class ViewHolder extends RecyclerView.ViewHolder {
-		@Bind(R.id.ivIcon)
+		@BindView(R.id.ivIcon)
 		ImageView ivIcon;
-		@Bind(R.id.tvName)
+		@BindView(R.id.tvName)
 		TextView tvName;
-		@Bind(R.id.tvStreamer)
+		@BindView(R.id.tvStreamer)
 		TextView tvStreamer;
-		@Bind(R.id.ivAdult)
+		@BindView(R.id.ivAdult)
 		ImageView ivAdult;
-		@Bind(R.id.tvRating)
+		@BindView(R.id.tvRating)
 		TextView tvRating;
-		@Bind(R.id.contentRoot)
+		@BindView(R.id.contentRoot)
 		RelativeLayout contentRoot;
 
 		private Stream mStream;

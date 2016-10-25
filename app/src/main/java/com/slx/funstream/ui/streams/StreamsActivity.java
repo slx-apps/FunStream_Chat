@@ -29,13 +29,13 @@ import com.slx.funstream.R;
 import com.slx.funstream.ui.AboutActivity;
 import com.slx.funstream.ui.AppSettingsActivity;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
 public class StreamsActivity extends AppCompatActivity {
 
-	@Bind(R.id.toolbar)
+	@BindView(R.id.toolbar)
 	Toolbar toolbar;
 
 	@Override

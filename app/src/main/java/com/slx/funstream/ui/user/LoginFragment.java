@@ -52,9 +52,10 @@ import com.trello.rxlifecycle.components.support.RxFragment;
 
 import javax.inject.Inject;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -81,19 +82,19 @@ public class LoginFragment extends RxFragment {
 	private ProgressDialog progressDialog;
 
 
-	@Bind(R.id.username_input)
+	@BindView(R.id.username_input)
 	EditText usernameInput;
-	@Bind(R.id.password_input)
+	@BindView(R.id.password_input)
 	EditText passwordInput;
-	@Bind(R.id.bt_log_in)
+	@BindView(R.id.bt_log_in)
 	Button btLogIn;
-	@Bind(R.id.username_text_input_layout)
+	@BindView(R.id.username_text_input_layout)
 	TextInputLayout usernameTextInputLayout;
-	@Bind(R.id.password_text_input_layout)
+	@BindView(R.id.password_text_input_layout)
 	TextInputLayout passwordTextInputLayout;
-	@Bind(R.id.login_root)
+	@BindView(R.id.login_root)
 	RelativeLayout loginRoot;
-	@Bind(R.id.btOAuthLogin)
+	@BindView(R.id.btOAuthLogin)
 	Button btOAuthLogin;
 
 	@Inject
@@ -106,7 +107,7 @@ public class LoginFragment extends RxFragment {
 	Context context;
 
 	private LoginHandler callback;
-
+	private Unbinder unbinder;
 
 	public static LoginFragment newInstance() {
 
@@ -136,7 +137,7 @@ public class LoginFragment extends RxFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_login, container, false);
-		ButterKnife.bind(this, v);
+		unbinder = ButterKnife.bind(this, v);
 		return v;
 	}
 
@@ -230,7 +231,7 @@ public class LoginFragment extends RxFragment {
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
-		ButterKnife.unbind(this);
+		unbinder.unbind();
 	}
 
 	private void showErrorLoginMessage(){

@@ -57,7 +57,7 @@ import java.util.regex.Matcher;
 
 import javax.inject.Inject;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static android.text.TextUtils.isEmpty;
@@ -264,13 +264,13 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	}
 
 	public static class ChatMessageHolder extends RecyclerView.ViewHolder {
-		@Bind(R.id.tvText)
+		@BindView(R.id.tvText)
 		TextView tvText;
-		@Bind(R.id.tvFrom)
+		@BindView(R.id.tvFrom)
 		TextView tvFrom;
-		@Bind(R.id.tvTo)
+		@BindView(R.id.tvTo)
 		TextView tvTo;
-		@Bind(R.id.messageRoot)
+		@BindView(R.id.messageRoot)
 		RelativeLayout messageRoot;
 
 		public ChatMessageHolder(View itemView) {
@@ -301,9 +301,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	}
 
     public static class SystemMessageHolder extends RecyclerView.ViewHolder {
-        @Bind(R.id.tvText)
+        @BindView(R.id.tvText)
         TextView tvText;
-        @Bind(R.id.messageRoot)
+        @BindView(R.id.messageRoot)
         LinearLayout messageRoot;
 
         public SystemMessageHolder(View itemView) {

@@ -37,14 +37,15 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 public class StreamsContainerFragment extends Fragment {
 
-	@Bind(R.id.tab_layout)
+	@BindView(R.id.tab_layout)
 	TabLayout tabLayout;
-	@Bind(R.id.viewpager)
+	@BindView(R.id.viewpager)
 	ViewPager viewpager;
 
 	@Inject
@@ -58,6 +59,7 @@ public class StreamsContainerFragment extends Fragment {
 	public static final int TYPE_LIST_ROOMS = 3;
 
 	private StreamListFragmentAdapter mPagerAdapter;
+	private Unbinder unbinder;
 
 	public static List<String> sChannels = new ArrayList<>();
 	static {
@@ -109,7 +111,7 @@ public class StreamsContainerFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 	                         Bundle savedInstanceState) {
 		final View view = inflater.inflate(R.layout.fragment_streams, container, false);
-		ButterKnife.bind(this, view);
+        unbinder = ButterKnife.bind(this, view);
 		return view;
 	}
 
@@ -129,7 +131,7 @@ public class StreamsContainerFragment extends Fragment {
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
-		ButterKnife.unbind(this);
+        unbinder.unbind();
 	}
 
 	public class ChatTabItem {

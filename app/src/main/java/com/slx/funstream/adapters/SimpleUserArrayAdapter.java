@@ -27,7 +27,7 @@ import android.widget.TextView;
 import com.slx.funstream.R;
 import com.slx.funstream.model.ChatUser;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class SimpleUserArrayAdapter extends ArrayAdapter<ChatUser> {
@@ -76,7 +76,7 @@ public class SimpleUserArrayAdapter extends ArrayAdapter<ChatUser> {
 
 
 	static class ViewHolder {
-		@Bind(R.id.tvUser)
+		@BindView(R.id.tvUser)
 		TextView tvUser;
 
 		ViewHolder(View view) {

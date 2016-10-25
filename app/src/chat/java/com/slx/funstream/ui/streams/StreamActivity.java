@@ -45,7 +45,7 @@ import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import javax.inject.Inject;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -59,11 +59,11 @@ public class StreamActivity extends RxAppCompatActivity {
 	public static final String STREAMER_ID = "streamer_id";
 	public static final int RC_LOGIN = 101;
 
-	@Bind(R.id.chat_container)
+	@BindView(R.id.chat_container)
 	FrameLayout chatContainer;
-	@Bind(R.id.toolbar)
+	@BindView(R.id.toolbar)
 	Toolbar toolbar;
-	@Bind(R.id.stream_root)
+	@BindView(R.id.stream_root)
 	LinearLayout streamRoot;
 
 	@Inject

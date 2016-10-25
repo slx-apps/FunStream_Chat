@@ -29,7 +29,7 @@ import com.slx.funstream.ui.streams.ChannelsAdapter.OnChatChannelClick;
 
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class ChatChannelsAdapter extends RecyclerView.Adapter<ChatChannelsAdapter.ViewHolder>
@@ -85,9 +85,9 @@ public class ChatChannelsAdapter extends RecyclerView.Adapter<ChatChannelsAdapte
 	}
 
 	class ViewHolder extends RecyclerView.ViewHolder {
-		@Bind(R.id.tvName)
+		@BindView(R.id.tvName)
 		TextView tvName;
-		@Bind(R.id.contentRoot)
+		@BindView(R.id.contentRoot)
 		LinearLayout contentRoot;
 
 		public ViewHolder(View itemView, boolean isItem) {

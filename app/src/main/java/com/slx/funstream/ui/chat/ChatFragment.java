@@ -71,7 +71,6 @@ import com.slx.funstream.chat.events.SmileLoadEvent;
 import com.slx.funstream.model.ChatMessage;
 import com.slx.funstream.model.ChatUser;
 import com.slx.funstream.model.Message;
-import com.slx.funstream.model.SystemMessage;
 import com.slx.funstream.rest.model.ChatListRequest;
 import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.rest.model.Smile;
@@ -93,9 +92,10 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -115,35 +115,35 @@ public class ChatFragment extends RxFragment
     public static final String CHANNEL_NAME = "channel_name";
 	public static final String CHANNEL_ID = "channel_id";
 
-	@Bind(R.id.etNewMessage)
+	@BindView(R.id.etNewMessage)
 	EditText etNewMessage;
-	@Bind(R.id.sendMessage)
+	@BindView(R.id.sendMessage)
 	ImageButton sendMessage;
-	@Bind(R.id.ibSmiles)
+	@BindView(R.id.ibSmiles)
 	ImageButton ibSmiles;
-	@Bind(R.id.contentRoot)
+	@BindView(R.id.contentRoot)
 	RelativeLayout contentRoot;
-	@Bind(R.id.rvChat)
+	@BindView(R.id.rvChat)
 	RecyclerView rvChat;
-	@Bind(R.id.chat_controls)
+	@BindView(R.id.chat_controls)
 	LinearLayout chatControls;
-	@Bind(R.id.progressBar)
+	@BindView(R.id.progressBar)
 	ProgressBar progressBar;
-	@Bind(R.id.tvServerMessages)
+	@BindView(R.id.tvServerMessages)
 	TextView tvServerMessages;
-	@Bind(R.id.progress_layout)
+	@BindView(R.id.progress_layout)
 	LinearLayout progressLayout;
-	@Bind(R.id.tvTo)
+	@BindView(R.id.tvTo)
 	TextView tvTo;
-	@Bind(R.id.chat_buttons_layout)
+	@BindView(R.id.chat_buttons_layout)
 	LinearLayout chatButtonsLayout;
-	@Bind(R.id.tvUserList)
+	@BindView(R.id.tvUserList)
 	TextView tvUserList;
-	@Bind(R.id.chat_layout)
+	@BindView(R.id.chat_layout)
 	FrameLayout chatLayout;
-	@Bind(R.id.btNewMessages)
+	@BindView(R.id.btNewMessages)
 	Button btNewMessages;
-	@Bind(R.id.btLoadOldMessages)
+	@BindView(R.id.btLoadOldMessages)
 	Button btLoadOldMessages;
 
 	@Inject
@@ -182,7 +182,7 @@ public class ChatFragment extends RxFragment
     private List<Message> chatMessages = new LinkedList<>();
     private CurrentUser currentUser;
 	private int smileSizeMultiplier;
-
+	private Unbinder unbinder;
 
 	public ChatFragment() {
 	}
@@ -231,7 +231,7 @@ public class ChatFragment extends RxFragment
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_chat, container, false);
-		ButterKnife.bind(this, view);
+		unbinder = ButterKnife.bind(this, view);
 		return view;
 	}
 
@@ -486,7 +486,7 @@ public class ChatFragment extends RxFragment
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
-		ButterKnife.unbind(this);
+		unbinder.unbind();
 	}
 
 	@Override
