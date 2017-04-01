@@ -4,16 +4,17 @@ package com.slx.funstream.chat;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.jakewharton.rxrelay2.PublishRelay;
+import com.jakewharton.rxrelay2.Relay;
 import com.slx.funstream.auth.UserStore;
 import com.slx.funstream.chat.events.ChatErrorEvent;
-import com.slx.funstream.chat.events.ChatUserListEvent;
 import com.slx.funstream.model.ChatChannelRequest;
 import com.slx.funstream.model.ChatHistoryRequest;
 import com.slx.funstream.model.ChatListResponse;
+import com.slx.funstream.model.ChatListResult;
 import com.slx.funstream.model.ChatMessage;
 import com.slx.funstream.model.ChatResponse;
 import com.slx.funstream.model.Message;
-import com.slx.funstream.model.SystemMessage;
 import com.slx.funstream.rest.APIUtils;
 import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.utils.PrefUtils;
@@ -21,6 +22,8 @@ import com.slx.funstream.utils.RxBus;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 import java.net.URISyntaxException;
 import java.security.KeyManagementException;
@@ -28,21 +31,21 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
 import javax.net.ssl.SSLContext;
 
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subscribers.DisposableSubscriber;
 import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import io.socket.engineio.client.transports.WebSocket;
-import rx.Observable;
-import rx.Subscriber;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
-import rx.subjects.BehaviorSubject;
-import rx.subscriptions.CompositeSubscription;
 
 import static com.slx.funstream.chat.ChatApiUtils.CHAT_EVENT_JOIN;
 import static com.slx.funstream.chat.ChatApiUtils.CHAT_EVENT_LEAVE;
@@ -53,13 +56,15 @@ import static com.slx.funstream.chat.ChatApiUtils.CHAT_HISTORY;
 import static com.slx.funstream.chat.ChatApiUtils.CHAT_LOGIN_TOKEN;
 import static com.slx.funstream.chat.ChatApiUtils.DEFAULT_AMOUNT_MESSAGES;
 
-public class ChatServicePresenter implements Presenter<ChatService> {
-    private static final String TAG = "ChatServicePresenter";
+public class ChatServiceController {
+    private static final String TAG = "ChatServiceController";
 
     public static final int MESSAGE_TYPE_SYSTEM = 1;
     public static final int MESSAGE_TYPE_CHAT = 0;
 
-    public static final int DEFAULT_CHANNEL_ID = -9999;
+    private static final int DEFAULT_CHANNEL_ID = -9999;
+    private static final int INITIAL_DELAY = 0;
+    private static final int PERIOD_IN_MIN = 1;
     private long currentChannelId = DEFAULT_CHANNEL_ID;
 
     private PrefUtils prefUtils;
@@ -69,62 +74,66 @@ public class ChatServicePresenter implements Presenter<ChatService> {
     private ChatService service;
     private IO.Options opts;
     private Socket mSocket;
-    private BehaviorSubject<Message> chatMessagesObservable = BehaviorSubject.create();
+    private Relay<Message> messagesRelay = PublishRelay.<Message>create().toSerialized();
     private RxBus rxBus;
-    private CompositeSubscription subscriptions = new CompositeSubscription();
+    private CompositeDisposable subscriptions = new CompositeDisposable();
     private CurrentUser user;
 
-    @Inject
-    public ChatServicePresenter(RxBus rxBus, PrefUtils prefUtils, UserStore userStore, Gson gson) {
+    public ChatServiceController(RxBus rxBus, PrefUtils prefUtils, UserStore userStore, Gson gson) {
         this.prefUtils = prefUtils;
         this.userStore = userStore;
         this.gson = gson;
         this.rxBus = rxBus;
     }
 
-    @Override
-    public void setView(ChatService service) {
-        Log.d(TAG, "setView");
+    public void setService(ChatService service) {
+        Log.d(TAG, "setService");
         subscriptions.clear();
         if (service != null) {
             this.service = service;
-            subscriptions.add(userStore.fetchUser()
+            DisposableSubscriber disposableSubscriber = new DisposableSubscriber<CurrentUser>() {
+
+                @Override
+                public void onNext(CurrentUser currentUser) {
+                    user = currentUser;
+                    Log.d(TAG, "ChatServiceController->setView->onNext " + currentUser);
+                    loginChat();
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    e.printStackTrace();
+                }
+
+                @Override
+                public void onComplete() {
+                    Log.d(TAG, "UserStore->setView->onComplete");
+                }
+            };
+
+            userStore.userObservable()
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<CurrentUser>() {
-                        @Override
-                        public void onCompleted() {
-                            Log.d(TAG, "ChatServicePresenter->setView->onCompleted");
-                        }
+                    .subscribe(disposableSubscriber);
 
-                        @Override
-                        public void onError(Throwable e) {
-                            e.printStackTrace();
-                        }
-
-                        @Override
-                        public void onNext(CurrentUser currentUser) {
-                            user = currentUser;
-                            Log.d(TAG, "ChatServicePresenter->setView->onNext " + currentUser);
-                            // Login if connected
-                            if (currentUser != null && mSocket != null) {
-                                loginChat();
-                            }
-                        }
-                    }));
+            subscriptions.add(disposableSubscriber);
         } else {
             this.service = null;
             subscriptions.clear();
         }
     }
 
-    public Observable<Message> getChatMessagesObservable() {
-        return chatMessagesObservable.asObservable();
+    public Flowable<Message> getChatMessagesObservable() {
+        return messagesRelay.toFlowable(BackpressureStrategy.BUFFER);
     }
 
     public void connect(long channelId) {
-        Log.d(TAG, "connect channelId="+channelId);
-        if (currentChannelId == channelId) return;//TODO check connected
+        Log.d(TAG, "connect channelId " + channelId);
+        if (currentChannelId == channelId) {
+            Log.d(TAG, "Already connected");
+            return;
+        }
+
         this.currentChannelId = channelId;
         openSocket();
         if (mSocket != null) {
@@ -132,11 +141,29 @@ public class ChatServicePresenter implements Presenter<ChatService> {
             subscribeEvents();
         }
 
-        if (userStore.getCurrentUser() != null) loginChat();
+        DisposableSubscriber disposableSubscriber = new DisposableSubscriber<Long>() {
 
-        subscriptions.add(Observable
-                .interval(0, 1, TimeUnit.MINUTES)
-                .subscribe(timer -> getUserIds(this.currentChannelId)));
+            @Override
+            public void onNext(Long aLong) {
+                getUserIds(currentChannelId);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "onComplete");
+            }
+        };
+
+
+        Flowable.interval(INITIAL_DELAY, PERIOD_IN_MIN, TimeUnit.MINUTES)
+                .subscribe(disposableSubscriber);
+
+        subscriptions.add(disposableSubscriber);
     }
 
     public void disconnect() {
@@ -146,11 +173,13 @@ public class ChatServicePresenter implements Presenter<ChatService> {
             unSubscribeEvents();
             closeSocket();
         }
-        subscriptions.unsubscribe();
+        if (subscriptions != null && !subscriptions.isDisposed()) {
+            subscriptions.clear();
+        }
     }
 
     public void joinChannel(long channel) {
-        Log.d(TAG, "joinChannel: channel="+channel);
+        Log.d(TAG, "joinChannel: channel=" + channel);
         currentChannelId = channel;
         if (mSocket == null) return;
 
@@ -163,28 +192,28 @@ public class ChatServicePresenter implements Presenter<ChatService> {
                 }
             });
         } catch (JSONException e) {
-            Log.e(TAG, "joinChannel: e=" + e.toString());
             e.printStackTrace();
         }
     }
 
     public void leaveChannel(long channel) {
-        Log.d(TAG, "leaveChannel: channel="+channel);
+        Log.d(TAG, "leaveChannel: channel " + channel);
         try {
             JSONObject leaveJsonObject = new JSONObject(gson.toJson(new ChatChannelRequest(channel)));
             mSocket.emit(CHAT_EVENT_LEAVE, leaveJsonObject, (Ack) args -> {
                 ChatResponse chatResponse = gson.fromJson(args[0].toString(), ChatResponse.class);
                 if (chatResponse.getStatus().equals(APIUtils.ERROR_STATUS)) {
                     notifyListenersError(chatResponse.getResult().getMessage());
-                } else{
+                } else {
                     loadChatHistory(currentChannelId);
                 }
             });
         } catch (JSONException e) {
-            Log.e(TAG, "leaveChannel: e=" + e.toString());
             e.printStackTrace();
         }
-        subscriptions.unsubscribe();
+        if (subscriptions != null && !subscriptions.isDisposed()) {
+            subscriptions.clear();
+        }
     }
 
     public void sendMessage(ChatMessage newMessage) {
@@ -193,7 +222,7 @@ public class ChatServicePresenter implements Presenter<ChatService> {
         try {
             mSocket.emit(CHAT_EVENT_NEW_MESSAGE, new JSONObject(gson.toJson(newMessage)), (Ack) args -> {
                 ChatResponse chatResponse = gson.fromJson(args[0].toString(), ChatResponse.class);
-                if (chatResponse.getStatus().equals(APIUtils.ERROR_STATUS)){
+                if (chatResponse.getStatus().equals(APIUtils.ERROR_STATUS)) {
                     notifyListenersError(chatResponse.getResult().getMessage());
                 }
             });
@@ -218,11 +247,8 @@ public class ChatServicePresenter implements Presenter<ChatService> {
                         Log.d(TAG, "loginChat: " + chatResponse.getStatus());
                     }
 
-                    Message message = new Message();
-                    message.setMessageType(MESSAGE_TYPE_SYSTEM);
-                    message.setText("Logged in");
-
-                    chatMessagesObservable.onNext(message);
+                    Message message = buildSystemMessage("Logged in");
+                    messagesRelay.accept(message);
                 });
             } catch (JSONException e) {
                 Log.e(TAG, e.toString());
@@ -250,7 +276,7 @@ public class ChatServicePresenter implements Presenter<ChatService> {
     private void createSocketOptions() {
         // Create connection options
         opts = new IO.Options();
-        opts.transports = new String[] { WebSocket.NAME };
+        opts.transports = new String[]{WebSocket.NAME};
         opts.secure = true;
         opts.sslContext = createSSLContext();
         opts.forceNew = true;
@@ -272,14 +298,13 @@ public class ChatServicePresenter implements Presenter<ChatService> {
     }
 
     private void closeSocket() {
-        if(mSocket != null){
+        if (mSocket != null) {
             mSocket.close();
         }
     }
 
     private void subscribeEvents() {
         mSocket.on(CHAT_EVENT_MESSAGE, onNewMessage);
-        //mSocket.on(CHAT_EVENT_REMOVE_MESSAGE, onRemoveMessage);
 
         mSocket.on(Socket.EVENT_ERROR, onError);
 
@@ -297,7 +322,6 @@ public class ChatServicePresenter implements Presenter<ChatService> {
     }
 
     private void unSubscribeEvents() {
-        //mSocket.off(CHAT_EVENT_REMOVE_MESSAGE, onRemoveMessage);
         mSocket.off(CHAT_EVENT_MESSAGE, onNewMessage);
 
         mSocket.off(Socket.EVENT_ERROR, onError);
@@ -315,40 +339,25 @@ public class ChatServicePresenter implements Presenter<ChatService> {
 //		mSocket.off(Socket.EVENT_RECONNECTING, onError);
     }
 
-//    // Chat server events listeners
-//    private Emitter.Listener onRemoveMessage = new Emitter.Listener() {
-//        @Override
-//        public void call(final Object... args) {
-//            final ChatMessage removeMessage = gson.fromJson(String.valueOf(args[0]), ChatMessage.class);
-//            //removeMessage(removeMessage);
-//        }
-//    };
-
     private Emitter.Listener onNewMessage = args -> {
         Object message = args[0];
         if (message != null) {
-            Observable.just(args[0])
+            Single.just(args[0])
                     .subscribeOn(Schedulers.computation())
-                    .observeOn(AndroidSchedulers.mainThread())
                     .map(obj -> String.valueOf(obj))
                     .map(jsonString -> gson.fromJson(jsonString, ChatMessage.class))
-                    // TODO fix duplicate message
-                    //.filter(chatMessage -> chatMessage.getType().equals(TYPE_MESSAGE) && !mMessages.contains(message))
-                    .distinct()
-                    .subscribe(new Subscriber<ChatMessage>() {
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(new DisposableSingleObserver<ChatMessage>() {
                         @Override
-                        public void onCompleted() {
+                        public void onSuccess(ChatMessage chatMessage) {
+                            Log.d(TAG, "onSuccess " + chatMessage);
+                            chatMessage.setMessageType(MESSAGE_TYPE_CHAT);
+                            messagesRelay.accept(chatMessage);
                         }
 
                         @Override
                         public void onError(Throwable e) {
                             notifyListenersError("Can't parse message");
-                        }
-
-                        @Override
-                        public void onNext(ChatMessage chatMessage) {
-                            chatMessage.setMessageType(MESSAGE_TYPE_CHAT);
-                            chatMessagesObservable.onNext(chatMessage);
                         }
                     });
         } else {
@@ -362,33 +371,27 @@ public class ChatServicePresenter implements Presenter<ChatService> {
         message.setMessageType(MESSAGE_TYPE_SYSTEM);
         message.setText("Error");
 
-        chatMessagesObservable.onNext(message);
+        messagesRelay.accept(message);
         dumpArgs(args);
     };
 
     private Emitter.Listener onConnectError = args -> {
         Log.d(TAG, "onConnectError");
-        Message message = new Message();
-        message.setMessageType(MESSAGE_TYPE_SYSTEM);
-        message.setText("Connect Error");
+        buildSystemMessage("Connect Error");
 
         dumpArgs(args);
     };
 
     private Emitter.Listener onReconnectError = args -> {
         Log.d(TAG, "onReconnectError");
-        Message message = new Message();
-        message.setMessageType(MESSAGE_TYPE_SYSTEM);
-        message.setText("Reconnect Error");
+        buildSystemMessage("Reconnect Error");
 
         dumpArgs(args);
     };
 
     private Emitter.Listener onReconnect = args -> {
         Log.d(TAG, "onReconnect");
-        Message message = new Message();
-        message.setMessageType(MESSAGE_TYPE_SYSTEM);
-        message.setText("Reconnecting");
+        buildSystemMessage("Reconnecting");
 
         joinChannel(currentChannelId);
         loginChat();
@@ -396,29 +399,28 @@ public class ChatServicePresenter implements Presenter<ChatService> {
 
     private Emitter.Listener onConnect = args -> {
         Log.d(TAG, "onConnect");
-        Message message = new Message();
-        message.setMessageType(MESSAGE_TYPE_SYSTEM);
-        message.setText("Connected");
 
-        chatMessagesObservable.onNext(message);
+        Message message = buildSystemMessage("Connected");
+
+        messagesRelay.accept(message);
     };
 
     public void getUserIds(Long channelId) {
+        Log.d(TAG, "getUserIds " + channelId);
         if (mSocket != null) {
             try {
                 mSocket.emit(ChatApiUtils.CHAT_USER_LIST,
                         new JSONObject(gson.toJson(new ChatChannelRequest(channelId))), (Ack) args -> {
-                    ChatListResponse chatListResponse = gson.fromJson(args[0].toString(), ChatListResponse.class);
-                    rxBus.send(new ChatUserListEvent(chatListResponse.getResult().getUsers()));
-                    if (chatListResponse.getStatus().equals(APIUtils.ERROR_STATUS)) {
-                        notifyListenersError(chatListResponse.getResult().getMessage());
-                    } else {
-                        notifyListenersUserListLoaded(chatListResponse.getResult().getUsers());
-                    }
+                            ChatListResponse chatListResponse = gson.fromJson(args[0].toString(), ChatListResponse.class);
 
-                });
+                            if (chatListResponse.getStatus().equals(APIUtils.ERROR_STATUS)) {
+                                notifyListenersError(chatListResponse.getResult().getMessage());
+                            } else {
+                                notifyListenersUserListLoaded(chatListResponse.getResult());
+                            }
+
+                        });
             } catch (JSONException e) {
-                Log.e(TAG, e.toString());
                 e.printStackTrace();
             }
         }
@@ -429,25 +431,24 @@ public class ChatServicePresenter implements Presenter<ChatService> {
         rxBus.send(new ChatErrorEvent(message));
     }
 
-    private void notifyListenersUserListLoaded(Integer[] users) {
-        Log.d(TAG, "notifyListenersUserListLoaded: " + users.length);
-        rxBus.send(new ChatUserListEvent(users));
+    private void notifyListenersUserListLoaded(ChatListResult chatListResult) {
+        //Log.d(TAG, "notifyListenersUserListLoaded: " + users.length);
+        rxBus.send(chatListResult);
     }
 
     private void loadChatHistory(long channel) {
-        Log.d(TAG, "loadChatHistory: channel="+channel);
+        Log.d(TAG, "loadChatHistory: channel " + channel);
         ChatHistoryRequest chatHistoryRequest = new ChatHistoryRequest();
         chatHistoryRequest.setAmount(DEFAULT_AMOUNT_MESSAGES);
         chatHistoryRequest.setChannel(channel);
         String req = gson.toJson(chatHistoryRequest);
 
         try {
-            mSocket.emit(CHAT_HISTORY,  new JSONObject(req), (Ack) args -> {
+            mSocket.emit(CHAT_HISTORY, new JSONObject(req), (Ack) args -> {
                 ChatResponse chatResponse = gson.fromJson(String.valueOf(args[0]), ChatResponse.class);
                 List<ChatMessage> list = chatResponse.getResult().getChatMessages();
             });
         } catch (JSONException e) {
-            Log.e(TAG, e.toString());
             e.printStackTrace();
         }
     }
@@ -460,5 +461,11 @@ public class ChatServicePresenter implements Presenter<ChatService> {
         }
     }
 
+    private Message buildSystemMessage(String text) {
+        Message message = new Message();
+        message.setMessageType(MESSAGE_TYPE_SYSTEM);
+        message.setText(text);
 
+        return message;
+    }
 }

@@ -28,7 +28,7 @@ import android.widget.TextView;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.slx.funstream.R;
-import com.slx.funstream.model.Stream;
+import com.slx.funstream.rest.model.Stream;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;

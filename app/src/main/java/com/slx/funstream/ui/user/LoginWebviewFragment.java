@@ -32,9 +32,10 @@ import android.widget.ProgressBar;
 
 import com.slx.funstream.App;
 import com.slx.funstream.R;
+import com.slx.funstream.di.DiProvider;
 import com.slx.funstream.rest.services.FunstreamApi;
 import com.slx.funstream.ui.user.LoginFragment.LoginHandler;
-import com.trello.rxlifecycle.components.support.RxFragment;
+import com.trello.rxlifecycle2.components.support.RxFragment;
 
 import javax.inject.Inject;
 
@@ -53,9 +54,7 @@ public class LoginWebviewFragment extends RxFragment {
 	@BindView(R.id.fragment_login_web_view)
 	WebView mWebView;
 
-    @Inject
-    FunstreamApi api;
-
+	private FunstreamApi api;
 	private Uri mUri;
 	private LoginHandler callback;
 	private Unbinder unbinder;
@@ -73,13 +72,14 @@ public class LoginWebviewFragment extends RxFragment {
 	public void onAttach(Context context) {
 		super.onAttach(context);
 		callback = (LoginHandler) context;
+
+		api = ((DiProvider) context).getFunstreamApi();
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mUri = getArguments().getParcelable(KEY_URI);
-        App.applicationComponent().inject(this);
 	}
 
 

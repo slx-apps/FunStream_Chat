@@ -17,27 +17,35 @@
 package com.slx.funstream;
 
 
+import android.app.Activity;
 import android.app.Application;
+import android.app.Service;
 import android.content.Context;
+import android.support.v4.app.Fragment;
 
 import com.crashlytics.android.Crashlytics;
 import com.facebook.stetho.Stetho;
-import com.slx.funstream.di.ApplicationComponent;
-import com.slx.funstream.di.ApplicationModule;
-import com.slx.funstream.di.ChatComponent;
-import com.slx.funstream.di.ChatModule;
-import com.slx.funstream.di.DaggerApplicationComponent;
-import com.slx.funstream.di.DaggerChatComponent;
-import com.slx.funstream.di.StorageModule;
-import com.slx.funstream.di.FunstreamApiModule;
+import com.slx.funstream.di.modules.AppModule;
+import com.slx.funstream.di.DaggerAppComponent;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
 
+import javax.inject.Inject;
+
+import dagger.android.DispatchingAndroidInjector;
+import dagger.android.HasDispatchingActivityInjector;
+import dagger.android.HasDispatchingServiceInjector;
+import dagger.android.support.HasDispatchingSupportFragmentInjector;
 import io.fabric.sdk.android.Fabric;
 
-public class App extends Application {
-	private static ApplicationComponent applicationComponent;
-    private static ChatComponent chatComponent;
+public class App extends Application implements HasDispatchingActivityInjector,
+        HasDispatchingSupportFragmentInjector,
+        HasDispatchingServiceInjector {
+
+	@Inject DispatchingAndroidInjector<Activity> dispatchingAndroidInjector;
+    @Inject DispatchingAndroidInjector<Service> dispatchingServiceFragmentAndroidInjector;
+	@Inject DispatchingAndroidInjector<Fragment> dispatchingFragmentAndroidInjector;
+
 	private RefWatcher refWatcher;
 
 	@Override
@@ -45,7 +53,13 @@ public class App extends Application {
 		super.onCreate();
         Fabric.with(this, new Crashlytics());
         Stetho.initializeWithDefaults(this);
-		initializeApplicationComponent(this);
+
+       DaggerAppComponent.builder()
+			   .application(this)
+			   .appModule(new AppModule(this))
+               .build()
+               .inject(this);
+
 		if (BuildConfig.DEBUG) refWatcher = LeakCanary.install(this);
 	}
 
@@ -54,26 +68,18 @@ public class App extends Application {
 		return application.refWatcher;
 	}
 
-    public static void initializeApplicationComponent(App app) {
-        applicationComponent = DaggerApplicationComponent.builder()
-                .applicationModule(new ApplicationModule(app))
-                .storageModule(new StorageModule())
-                .funstreamApiModule(new FunstreamApiModule())
-                .build();
-    }
-    public static ApplicationComponent applicationComponent() {
-        return applicationComponent;
+	@Override
+	public DispatchingAndroidInjector<Activity> activityInjector() {
+		return dispatchingAndroidInjector;
+	}
+
+    @Override
+    public DispatchingAndroidInjector<Service> serviceInjector() {
+        return dispatchingServiceFragmentAndroidInjector;
     }
 
-    public static ChatComponent chatComponent() {
-        return chatComponent;
+    @Override
+    public DispatchingAndroidInjector<Fragment> supportFragmentInjector() {
+        return dispatchingFragmentAndroidInjector;
     }
-
-    public static ChatComponent initializeChatComponent() {
-        return chatComponent = DaggerChatComponent.builder()
-                .chatModule(new ChatModule())
-                .applicationComponent(applicationComponent)
-                .build();
-    }
-
 }

@@ -21,13 +21,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.slx.funstream.rest.model.CurrentUser;
+import com.slx.funstream.ui.streams.StreamActivity;
 
 public class PrefUtils {
 	public static final String PREFS_FILE = "user.sp";
 	private static final String PREFS_USERID = "prefs_userid";
 	private static final String PREFS_USERNAME = "prefs_username";
-//	private static final String PREFS_LOGIN = "prefs_login";
-//	private static final String PREFS_PASSWORD = "prefs_password";
 	private static final String PREFS_TOKEN = "prefs_token";
 
 	public static final String PREFS_AWAKE = "chat.awake";
@@ -60,8 +59,6 @@ public class PrefUtils {
 		prefs.edit()
 			.putLong(PREFS_USERID, user.getId())
 			.putString(PREFS_USERNAME, user.getName())
-	//		.putString(PREFS_LOGIN, user.getLogin())
-	//		.putString(PREFS_PASSWORD, user.getPassword())
 			.putString(PREFS_TOKEN, user.getToken())
 			.apply();
 	}
@@ -69,9 +66,7 @@ public class PrefUtils {
 	public CurrentUser getUser() {
 		if (prefs.contains(PREFS_TOKEN)) {
 			CurrentUser user = new CurrentUser();
-			user.setId(prefs.getLong(PREFS_USERID, -999));
-//			user.setLogin(prefs.getString(PREFS_LOGIN, null));
-//			user.setPassword(prefs.getString(PREFS_PASSWORD, null));
+			user.setId(prefs.getLong(PREFS_USERID, StreamActivity.DEFAULT_NON_EXISTING_VALUE));
 			user.setName(prefs.getString(PREFS_USERNAME, null));
 			user.setToken(prefs.getString(PREFS_TOKEN, null));
 			return user;
@@ -79,38 +74,28 @@ public class PrefUtils {
 		return null;
 	}
 
-	public boolean isScreenOn(){
+	public boolean isScreenOn() {
 		return prefs.getBoolean(PREFS_AWAKE, true);
 	}
 
-	public boolean isScroll(){
+	public boolean isScroll() {
 		return prefs.getBoolean(PREFS_SCROLL, true);
 	}
 
-	public boolean isFirst(){
-		return prefs.getBoolean(PREFS_FIRST, true);
-	}
-
-	public void setFirst(){
-		prefs.edit()
-				.putBoolean(PREFS_FIRST, false)
-				.apply();
-	}
-
-	public boolean isShowStream(){
+	public boolean isShowStream() {
 		return prefs.getBoolean(PREFS_SHOW_STREAM, true);
 	}
 
-	public boolean isShowChat(){
+	public boolean isShowChat() {
 		return prefs.getBoolean(PREFS_SHOW_CHAT, true);
 	}
 
-	public String getUserCode(){
+	public String getUserCode() {
 		return prefs.getString(PREFS_OAUTH_CODE, null);
 
 	}
 
-	public void setUserCode(String code){
+	public void setUserCode(String code) {
 		prefs.edit()
 				.putString(PREFS_OAUTH_CODE, code)
 				.apply();
@@ -122,12 +107,12 @@ public class PrefUtils {
 	}
 
 
-	public int getLastSelectedCategory(){
+	public int getLastSelectedCategory() {
 		return prefs.getInt(PREFS_LAST_SELECTED_CATEGORY, 1);
 
 	}
 
-	public void setLastSelectedCategory(int categoryId){
+	public void setLastSelectedCategory(int categoryId) {
 		prefs.edit()
 				.putInt(PREFS_LAST_SELECTED_CATEGORY, categoryId)
 				.apply();
@@ -137,13 +122,11 @@ public class PrefUtils {
 		prefs.edit()
 		.remove(PREFS_USERNAME)
 		.remove(PREFS_USERID)
-//		.remove(PREFS_LOGIN)
-//		.remove(PREFS_PASSWORD)
 		.remove(PREFS_TOKEN)
 		.apply();
 	}
 
-	public SharedPreferences getPrefs(){
+	public SharedPreferences getPrefs() {
 		return prefs;
 	}
 

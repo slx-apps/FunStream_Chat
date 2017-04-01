@@ -20,6 +20,7 @@ package com.slx.funstream.auth;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.jakewharton.rxrelay2.BehaviorRelay;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.SignedJWT;
@@ -28,12 +29,14 @@ import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.rest.services.FunstreamApi;
 import com.slx.funstream.utils.PrefUtils;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
-import rx.subjects.BehaviorSubject;
-import rx.subjects.PublishSubject;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.BehaviorSubject;
 
 import static android.text.TextUtils.isEmpty;
 
@@ -43,7 +46,7 @@ public class UserStore {
 	private Gson mGson;
 	private PrefUtils prefUtils;
     private CurrentUser currentUser;
-	private BehaviorSubject<CurrentUser> user;
+	private BehaviorRelay<CurrentUser> userRelay;
 
 	private boolean userTokenValid = false;
 
@@ -52,15 +55,15 @@ public class UserStore {
 		this.prefUtils = prefUtils;
         this.funstreamApi = funstreamApi;
 
-		user = BehaviorSubject.create(prefUtils.getUser());
+		userRelay = BehaviorRelay.create();
 
-        user.doOnNext(user -> {
+		userRelay.doOnNext(user -> {
             Log.d(TAG, "UserStore: new user" + user);
             currentUser = user;
         });
 	}
 
-	public Observable<CurrentUser> fetchUser() {
+	public void fetchUser() {
 //        user.subscribeOn(Schedulers.io())
 //                .observeOn(AndroidSchedulers.mainThread())
 //                .subscribe(new Subscriber<CurrentUser>() {
@@ -80,12 +83,28 @@ public class UserStore {
 //                        currentUser = user;
 //                    }
 //        });
-		return user.asObservable();
+//		return userRelay.toFlowable(BackpressureStrategy.LATEST);
+
+		Single.just(prefUtils.getUser())
+				.subscribeOn(Schedulers.io())
+				.observeOn(AndroidSchedulers.mainThread())
+                //.toObservable();
+				.subscribeWith(new DisposableSingleObserver<CurrentUser>() {
+					@Override
+					public void onSuccess(CurrentUser currentUser) {
+                        userRelay.accept(currentUser);
+					}
+
+					@Override
+					public void onError(Throwable e) {
+                        e.printStackTrace();
+					}
+				});
 	}
 
-    public void updateUser() {
-        user.onNext(prefUtils.getUser());
-    }
+//    public void updateUser() {
+//		userRelay.accept(prefUtils.getUser());
+//    }
 
 	/**
 	 * Check if user's token has not been expired
@@ -100,7 +119,7 @@ public class UserStore {
 
     public static SimpleToken parseToken(String token, Gson gson) {
 		try {
-			SignedJWT signedJWT = (SignedJWT)JWTParser.parse(token);
+			SignedJWT signedJWT = (SignedJWT) JWTParser.parse(token);
 			Payload payload = signedJWT.getPayload();
             SimpleToken simpleToken = gson.fromJson(payload.toString(), SimpleToken.class);
             Log.d(TAG, "parseToken: " + simpleToken);
@@ -140,8 +159,7 @@ public class UserStore {
 		return currentUser;
 	}
 
-	public BehaviorSubject<CurrentUser> getUser() {
-		if (user == null) user = BehaviorSubject.create(prefUtils.getUser());
-		return user;
+	public Flowable<CurrentUser> userObservable() {
+		return userRelay.toFlowable(BackpressureStrategy.LATEST);
 	}
 }

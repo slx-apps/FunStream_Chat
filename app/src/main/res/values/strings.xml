@@ -323,5 +323,14 @@
     <string name="user_expire_label">Token expires in :</string>
 	<string name="auth_dialog_help_title">Authentication</string>
     <string name="auth_dialog_help_desc">Enter your login password and click on Confirm button.</string>
+	<string name="audio">Audio</string>
+	<string name="video">Video</string>
+	<string name="text">Text</string>
+	<string name="error_querying_decoders" translatable="false">error_querying_decoders</string>
+	<string name="error_no_secure_decoder" translatable="false">error_no_secure_decoder %s</string>
+	<string name="error_no_decoder" translatable="false">error_no_decoder %s</string>
+	<string name="error_instantiating_decoder" translatable="false">error_instantiating_decoder %s</string>
+    <string name="chat_user_list_empty">So alone here :( user list is empty</string>
+    <string name="title_user_activity">Account</string>
 
 </resources>

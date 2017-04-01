@@ -18,10 +18,10 @@ package com.slx.funstream.rest.model;
 
 
 public class OAuthResponse {
-	String code;
-	String token;
-	String message;
-	CurrentUser user;
+	private String code;
+	private String token;
+	private String message;
+	private CurrentUser user;
 
 
 	public String getCode() {
@@ -44,8 +44,7 @@ public class OAuthResponse {
 		return user;
 	}
 
-	public OAuthResponse() {
-	}
+	public OAuthResponse() {}
 
 	@Override
 	public String toString() {

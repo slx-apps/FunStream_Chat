@@ -1,7 +1,7 @@
 package com.slx.funstream.rest;
 
 
-import com.slx.funstream.model.Stream;
+import com.slx.funstream.rest.model.Stream;
 import com.slx.funstream.rest.model.Category;
 import com.slx.funstream.rest.model.CategoryOptions;
 import com.slx.funstream.rest.model.CategoryRequest;
@@ -11,15 +11,15 @@ import com.slx.funstream.rest.services.FunstreamApi;
 import java.util.ArrayList;
 import java.util.List;
 
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+
 
 public class StreamsRepo {
     private static final String STREAM = "stream";
     private static final String TYPE = "all";
     private static final String CATEGORY_TOP = "Top";
-
 
     private FunstreamApi api;
 
@@ -27,21 +27,22 @@ public class StreamsRepo {
         this.api = api;
     }
 
-    public Observable<List<Stream>> getAllStreams(Category category) {
+    public Single<List<Stream>> getAllStreams(Category category) {
         return api.getStreams(new ContentRequest(STREAM, TYPE, category));
     }
 
-    public Observable<List<Category>> getAllCategories() {
-        return api.getCategoriesWithSubs(new CategoryRequest(APIUtils.CONTENT_STREAM,
+    public Single<List<Category>> getAllCategories() {
+        return api.getCategoriesWithSubs(
+                new CategoryRequest(APIUtils.CONTENT_STREAM,
                 new CategoryOptions(true)))
-                .map(cat -> {
+                .map(category -> {
                     List<Category> cats = new ArrayList<>();
                     // Костыль пустого имени топ категории id == 1
-                    if (cat.getId() == 1) cat.setName(CATEGORY_TOP);
-                    cats.add(cat);
-                    if (cat.getSubCategories() != null && cat.getSubCategories().length > 0) {
-                        Category[] catsArray = cat.getSubCategories();
-                        for (int i = 0; i < cat.getSubCategories().length; i++) {
+                    if (category.getId() == 1) category.setName(CATEGORY_TOP);
+                    cats.add(category);
+                    if (category.getSubCategories() != null && category.getSubCategories().length > 0) {
+                        Category[] catsArray = category.getSubCategories();
+                        for (int i = 0; i < category.getSubCategories().length; i++) {
                             cats.add(catsArray[i]);
                         }
                     }
@@ -49,6 +50,5 @@ public class StreamsRepo {
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
-                //.compose(bindToLifecycle())
     }
 }

@@ -40,15 +40,17 @@ import com.slx.funstream.App;
 import com.slx.funstream.BuildConfig;
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
+import com.slx.funstream.di.DiProvider;
 import com.slx.funstream.rest.FSRestClient;
 import com.slx.funstream.rest.model.AuthRequest;
 import com.slx.funstream.rest.model.AuthResponse;
 import com.slx.funstream.rest.model.OAuthRequest;
 import com.slx.funstream.rest.model.OAuthResponse;
+import com.slx.funstream.rest.services.FunstreamApi;
 import com.slx.funstream.utils.LogUtils;
 import com.slx.funstream.utils.NetworkUtils;
 import com.slx.funstream.utils.PrefUtils;
-import com.trello.rxlifecycle.components.support.RxFragment;
+import com.trello.rxlifecycle2.components.support.RxFragment;
 
 import javax.inject.Inject;
 
@@ -56,12 +58,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 import static android.text.TextUtils.isEmpty;
 import static com.slx.funstream.rest.APIUtils.OAUTH_BROWSER_LINK;
@@ -97,15 +99,8 @@ public class LoginFragment extends RxFragment {
 	@BindView(R.id.btOAuthLogin)
 	Button btOAuthLogin;
 
-	@Inject
-	FSRestClient restClient;
-	@Inject
-	UserStore userStore;
-	@Inject
-	PrefUtils prefUtils;
-	@Inject
-	Context context;
-
+    private FunstreamApi api;
+    private PrefUtils prefUtils;
 	private LoginHandler callback;
 	private Unbinder unbinder;
 
@@ -125,12 +120,14 @@ public class LoginFragment extends RxFragment {
 	public void onAttach(Context context) {
 		super.onAttach(context);
 		callback = (LoginHandler) context;
+
+		api = ((DiProvider) context).getFunstreamApi();
+		prefUtils = ((DiProvider) context).getPrefUtils();
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		App.applicationComponent().inject(this);
 	}
 
 	@Nullable
@@ -195,37 +192,32 @@ public class LoginFragment extends RxFragment {
             return;
         }
 
-        restClient.getApiService().getPermissionCodeObs(new OAuthRequest(BuildConfig.APP_KEY))
+        api.getPermissionCodeObs(new OAuthRequest(BuildConfig.APP_KEY))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .compose(bindToLifecycle())
-                .subscribe(new Subscriber<OAuthResponse>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.d(TAG, "Get Permission code completed");
-                    }
+                .subscribe(new DisposableSingleObserver<OAuthResponse>() {
+					@Override
+					public void onSuccess(OAuthResponse oAuthResponse) {
+						Log.d(TAG, "permissionCode->Next: " + oAuthResponse);
 
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                        showErrorLoginMessage();
-                    }
+						if (!isEmpty(oAuthResponse.getCode())) {
+							btOAuthLogin.setEnabled(true);
+							// Retrieve code from response
+							oAuthCode = oAuthResponse.getCode();
+							// Save code to SP
+							prefUtils.setUserCode(oAuthCode);
+						} else {
+							showErrorLoginMessage();
+						}
+					}
 
-                    @Override
-                    public void onNext(OAuthResponse oAuthResponse) {
-                        Log.d(TAG, "permissionCode->Next: " + oAuthResponse);
-
-                        if (!isEmpty(oAuthResponse.getCode())) {
-                            btOAuthLogin.setEnabled(true);
-                            // Retrieve code from response
-                            oAuthCode = oAuthResponse.getCode();
-                            // Save code to SP
-                            prefUtils.setUserCode(oAuthCode);
-                        } else {
-                            showErrorLoginMessage();
-                        }
-                    }
-                });
+					@Override
+					public void onError(Throwable e) {
+						e.printStackTrace();
+						showErrorLoginMessage();
+					}
+				});
 	}
 
 	@Override
@@ -252,7 +244,7 @@ public class LoginFragment extends RxFragment {
 	void loginOAuth() {
         Log.d(TAG, "loginOAuth: " + oAuthCode);
         // Start browser with code
-        startBrowser(context, Uri.parse(OAUTH_BROWSER_LINK + oAuthCode));
+        startBrowser(getActivity(), Uri.parse(OAUTH_BROWSER_LINK + oAuthCode));
 
 //		// Check if connection is present and working
 //		if(!NetworkUtils.isNetworkConnectionPresent(this)){
@@ -315,7 +307,7 @@ public class LoginFragment extends RxFragment {
 			return;
 		}
 		//showProgressDialog();
-		Call<AuthResponse> call = restClient.getApiService().login(new AuthRequest(login, password));
+		Call<AuthResponse> call = api.login(new AuthRequest(login, password));
 		call.enqueue(new Callback<AuthResponse>() {
 
 			@Override
@@ -374,7 +366,7 @@ public class LoginFragment extends RxFragment {
 
 //		loginObs = restClient.getApiService().getTokenObs(new OAuthResponse(oAuthCode))
 //				.subscribeOn(Schedulers.io())
-//				.map(OAuthResponse::getUser)
+//				.map(OAuthResponse::userObservable)
 //				.observeOn(AndroidSchedulers.mainThread())
 //				.compose(bindToLifecycle());
 //
@@ -402,10 +394,8 @@ public class LoginFragment extends RxFragment {
 //					}
 //				});
 
-		Call<OAuthResponse> call = restClient.getApiService().getToken(new OAuthResponse(oAuthCode));
+		Call<OAuthResponse> call = api.getToken(new OAuthResponse(oAuthCode));
 		call.enqueue(new Callback<OAuthResponse>() {
-
-
             @Override
             public void onResponse(Call<OAuthResponse> call, Response<OAuthResponse> response) {
 				OAuthResponse oAuthResponse = response.body();

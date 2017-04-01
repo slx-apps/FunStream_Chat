@@ -54,8 +54,9 @@ import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.jakewharton.rxbinding.widget.RxTextView;
+import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.slx.funstream.App;
 import com.slx.funstream.BuildConfig;
 import com.slx.funstream.R;
@@ -66,25 +67,24 @@ import com.slx.funstream.chat.ChatApiUtils;
 import com.slx.funstream.chat.ChatService;
 import com.slx.funstream.chat.SmileRepo;
 import com.slx.funstream.chat.events.ChatErrorEvent;
-import com.slx.funstream.chat.events.ChatUserListEvent;
 import com.slx.funstream.chat.events.SmileLoadEvent;
+import com.slx.funstream.model.ChatListResult;
 import com.slx.funstream.model.ChatMessage;
 import com.slx.funstream.model.ChatUser;
 import com.slx.funstream.model.Message;
-import com.slx.funstream.rest.model.ChatListRequest;
 import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.rest.model.Smile;
 import com.slx.funstream.rest.services.FunstreamApi;
 import com.slx.funstream.ui.chat.SmileGridView.OnSmileClickListener;
 import com.slx.funstream.ui.chat.SmileKeyboard.OnSmileBackspaceClickListener;
 import com.slx.funstream.ui.chat.SmileKeyboard.OnSoftKeyboardOpenCloseListener;
-import com.slx.funstream.utils.LogUtils;
+import com.slx.funstream.ui.streams.StreamActivity;
 import com.slx.funstream.utils.PrefUtils;
 import com.slx.funstream.utils.RxBus;
 import com.squareup.leakcanary.RefWatcher;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
-import com.trello.rxlifecycle.components.support.RxFragment;
+import com.trello.rxlifecycle2.components.support.RxFragment;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -96,9 +96,13 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import dagger.android.AndroidInjection;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subscribers.DefaultSubscriber;
+import io.reactivex.subscribers.DisposableSubscriber;
 
 import static android.text.TextUtils.isEmpty;
 
@@ -111,6 +115,7 @@ public class ChatFragment extends RxFragment
 		PopupWindow.OnDismissListener,
 		ChatAdapter.OnChatMessageClick,
         ServiceConnection {
+
     private static final String TAG = "ChatFragment";
     public static final String CHANNEL_NAME = "channel_name";
 	public static final String CHANNEL_ID = "channel_id";
@@ -162,20 +167,19 @@ public class ChatFragment extends RxFragment
     RxBus rxBus;
 
 	private SmileKeyboard smileKeyboard;
-//	private SmileHandler smileHandler;
 	private List<EditTextTarget> targets = new ArrayList<>();
 
 	private boolean isScrollToBottom = true;
 	private LinearLayoutManager mLinearLayoutManager;
 
-	private long channel_id = -1;
-	private String channel_name = "";
+	private long channelId = -1;
+	private String channelName = "";
 
 	private ChatAdapter chatAdapter;
 	private ChatMessage newMessage = null;
 
 	private ChatService mService;
-	private Integer[] userIds;
+	private ChatUser[] userIds;
 
     // Smiley image spansText field
     private List<ImageSpan> imageSpans = new LinkedList<>();
@@ -184,8 +188,7 @@ public class ChatFragment extends RxFragment
 	private int smileSizeMultiplier;
 	private Unbinder unbinder;
 
-	public ChatFragment() {
-	}
+	public ChatFragment() {}
 
 	public static ChatFragment newInstance(long channelId, String channelName) {
 		ChatFragment chatFragment = new ChatFragment();
@@ -199,8 +202,8 @@ public class ChatFragment extends RxFragment
 
 	@Override
 	public void onAttach(Context context) {
+		((StreamActivity) context).supportFragmentInjector().inject(this);
 		super.onAttach(context);
-		App.applicationComponent().inject(this);
 	}
 
 	@Override
@@ -209,16 +212,16 @@ public class ChatFragment extends RxFragment
 
 		Bundle args = getArguments();
 		if (args != null) {
-			channel_id = args.getLong(CHANNEL_ID);
-			channel_name = args.getString(CHANNEL_NAME);
+            channelId = args.getLong(CHANNEL_ID);
+			channelName = args.getString(CHANNEL_NAME);
 		}
-        
-		chatAdapter = new ChatAdapter(getActivity());
+		boolean isShowSmileys = prefUtils.isShowSmileys();
+		chatAdapter = new ChatAdapter(getActivity(), smileRepo, picasso, isShowSmileys);
 		chatAdapter.updateChatAdapter(chatMessages);
 
         // Start Chat message receiver service
 		Intent startIntent = new Intent(context, ChatService.class);
-		startIntent.putExtra(CHANNEL_ID, channel_id);
+		startIntent.putExtra(CHANNEL_ID, channelId);
 		context.startService(startIntent);
 
 		smileRepo.loadSmiles();
@@ -241,7 +244,7 @@ public class ChatFragment extends RxFragment
 
         AppCompatActivity activity = (AppCompatActivity) getActivity();
 		if (activity.getSupportActionBar() != null) {
-			activity.getSupportActionBar().setTitle(channel_name);
+			activity.getSupportActionBar().setTitle(channelName);
 		}
 
 		mLinearLayoutManager = new LinearLayoutManager(context);
@@ -263,8 +266,7 @@ public class ChatFragment extends RxFragment
 			return handled;
 		});
 
-		RxTextView
-				.beforeTextChangeEvents(etNewMessage)
+		RxTextView.beforeTextChangeEvents(etNewMessage)
 				.subscribe(e -> {
                     int count = e.count();
                     int start = e.start();
@@ -288,8 +290,7 @@ public class ChatFragment extends RxFragment
                     }
                 });
 
-		RxTextView
-				.afterTextChangeEvents(etNewMessage)
+		RxTextView.afterTextChangeEvents(etNewMessage)
 				.subscribe(e -> {
                     Editable message = e.editable();
 
@@ -310,14 +311,32 @@ public class ChatFragment extends RxFragment
 				});
 
         // Handle application bus
-        rxBus
-                .toObserverable()
+        rxBus.toObservable()
                 .compose(bindToLifecycle())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Object>() {
+                .subscribeWith(new Observer<Object>() {
                     @Override
-                    public void onCompleted() {
-                        Log.d(TAG, "onCompleted rxBus");
+                    public void onSubscribe(Disposable d) {
+                        Log.d(TAG, "RxBus->onSubscribe");
+                    }
+
+                    @Override
+                    public void onNext(Object event) {
+                        if (event instanceof SmileLoadEvent) {
+                            Log.d(TAG, "RxBus->onCompleted");
+                            if (smileKeyboard == null) {
+                                createSmileKeyboardPopUp();
+                                showChatViews();
+                            }
+                        } else if (event instanceof ChatErrorEvent) {
+                            Snackbar.make(contentRoot,
+                                    ((ChatErrorEvent) event).getMessage(), Snackbar.LENGTH_LONG)
+                                    .show();
+                        } else if (event instanceof ChatListResult) {
+                            ChatListResult chatListResult = (ChatListResult) event;
+                            userIds = chatListResult.getUsers();
+                            updateUserList(userIds, chatListResult.getAmount());
+                        }
                     }
 
                     @Override
@@ -326,41 +345,18 @@ public class ChatFragment extends RxFragment
                     }
 
                     @Override
-                    public void onNext(Object event) {
-                        if (event instanceof SmileLoadEvent) {
-                            Log.d(TAG, "onCompleted: SmileLoadEvent");
-                            if (smileKeyboard == null) {
-                                createSmileKeyboardPopUp();
-                                showChatViews();
-                            }
-                        } else if (event instanceof ChatErrorEvent) {
-                            Snackbar.make(contentRoot,
-                                    ((ChatErrorEvent) event).getMessage(), Snackbar.LENGTH_LONG)
-                                   .show();
-                        } else if (event instanceof ChatUserListEvent) {
-                            userIds = ((ChatUserListEvent) event).getUsers();
-                            updateUserList(userIds);
-                        }
+                    public void onComplete() {
+                        Log.d(TAG, "RxBus->onComplete");
                     }
                 });
 
+
         // Handle Chat controls
-		userStore
-                .fetchUser()
+		userStore.userObservable()
                 .subscribeOn(Schedulers.io())
                 .compose(bindToLifecycle())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<CurrentUser>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.d(TAG, "fetchUser onCompleted");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(TAG, "fetchUser onError " + e);
-						e.printStackTrace();
-                    }
+                .subscribe(new DisposableSubscriber<CurrentUser>() {
 
                     @Override
                     public void onNext(CurrentUser user) {
@@ -369,15 +365,16 @@ public class ChatFragment extends RxFragment
                         if (currentUser != null && !isEmpty(user.getToken())) {
                             showChatControls(true);
                         }
+                    }
 
-//                		// Check if user has logged in and token is exists
-//                		if (userStore.isUserLoggedIn()) {
-//                			// Show chat controls
-//                			showChatControls(false);
-//                		} else {
-//                			// Hide chat controls
-//                			showChatControls(true);
-//                		}
+                    @Override
+                    public void onError(Throwable t) {
+                        t.printStackTrace();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "fetchUser onCompleted");
                     }
                 });
 
@@ -385,8 +382,8 @@ public class ChatFragment extends RxFragment
 //		smileHandler = new SmileHandler(etNewMessage);
 	}
 
-    private void updateUserList(Integer[] userIds) {
-        tvUserList.setText(String.valueOf(userIds.length));
+    private void updateUserList(ChatUser[] userIds, int notLoggedIn) {
+        tvUserList.setText(String.valueOf(notLoggedIn) + "/" + String.valueOf(userIds.length));
     }
 
     private void showChatViews() {
@@ -457,8 +454,8 @@ public class ChatFragment extends RxFragment
 	public void onPrepareOptionsMenu(Menu menu) {
 		super.onPrepareOptionsMenu(menu);
 
-		if (channel_id == ChatApiUtils.CHANNEL_MAIN ||
-				channel_id == ChatApiUtils.CHANNEL_ADMIN) { // ||!userStore.isUserLoggedIn()
+		if (channelId == ChatApiUtils.CHANNEL_MAIN ||
+                channelId == ChatApiUtils.CHANNEL_ADMIN) { // ||!userStore.isUserLoggedIn()
 			MenuItem menuItem = menu.findItem(R.id.action_message_to_streamer);
 			menuItem.setVisible(false);
 		}
@@ -471,9 +468,9 @@ public class ChatFragment extends RxFragment
 		if (id == R.id.action_message_to_streamer) {
 			if (currentUser != null) {
 				newMessage = new ChatMessage();
-				newMessage.setTo(new ChatUser(channel_id, channel_name));
+				newMessage.setTo(new ChatUser(channelId, channelName));
 				if (!etNewMessage.isFocused()) etNewMessage.requestFocus();
-				tvTo.setText(channel_name);
+				tvTo.setText(channelName);
 				tvTo.setVisibility(View.VISIBLE);
 			}
 			return true;
@@ -538,7 +535,7 @@ public class ChatFragment extends RxFragment
                 newMessage.setTo(null);
             }
 
-            newMessage.setChannel(channel_id);
+            newMessage.setChannel(channelId);
             newMessage.setFrom(new ChatUser(currentUser.getId(), currentUser.getName()));
             newMessage.setText(etNewMessage.getText().toString());
 
@@ -555,7 +552,7 @@ public class ChatFragment extends RxFragment
 	}
 
 	private void createSmileKeyboardPopUp() {
-        smileKeyboard = new SmileKeyboard(getContext(), contentRoot, smileRepo.getSmiles().values());
+        smileKeyboard = new SmileKeyboard(getContext(), contentRoot, smileRepo.getSmiles().values(), picasso);
         smileKeyboard.setAnimationStyle(R.style.keyboard_animation);
         smileKeyboard.setSizeForSoftKeyboard();
         smileKeyboard.setOnSoftKeyboardOpenCloseListener(ChatFragment.this);
@@ -572,26 +569,9 @@ public class ChatFragment extends RxFragment
 	@OnClick(R.id.tvUserList)
 	void showUserListDialog() {
         if (userIds != null) {
-            funstreamApi.getChatUsers(new ChatListRequest(userIds))
-                    .subscribeOn(Schedulers.io())
-                    .compose(bindToLifecycle())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<ChatUser[]>() {
-                        @Override
-                        public void onCompleted() {
-
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            e.printStackTrace();
-                        }
-
-                        @Override
-                        public void onNext(ChatUser[] chatUsers) {
-                            createUserListDialog(chatUsers);
-                        }
-                    });
+            createUserListDialog(userIds);
+        } else {
+            Toast.makeText(context, getString(R.string.chat_user_list_empty), Toast.LENGTH_SHORT).show();
         }
 	}
 
@@ -601,7 +581,7 @@ public class ChatFragment extends RxFragment
 
 		final SimpleUserArrayAdapter arrayAdapter = new SimpleUserArrayAdapter(getContext(), R.layout.row_user, chatUsers);
 		builder.setAdapter(arrayAdapter, (dialogInterface, i) -> {
-			Log.i(LogUtils.TAG, arrayAdapter.getItem(i).getName());
+			Log.i(TAG, arrayAdapter.getItem(i).getName());
 			makeTo(arrayAdapter.getItem(i));
 		});
 		builder.show();
@@ -635,71 +615,6 @@ public class ChatFragment extends RxFragment
 
     }
 
-//	private class SmileHandler implements TextWatcher {
-//		private final EditText mEditText;
-//		private final ArrayList<ImageSpan> imageSpans = new ArrayList<>();
-//
-//		public SmileHandler(EditText editText) {
-//			mEditText = editText;
-//			mEditText.addTextChangedListener(this);
-//		}
-//
-//		public void insert(Smile smile) {
-//			int start = mEditText.getSelectionStart();
-//			int end = mEditText.getSelectionEnd();
-//			EditTextTarget target = new EditTextTarget(start, end, mEditText, smile);
-//			targets.add(target);
-//			picasso.load(smile.getUrl())
-//					.into(target);
-//
-//		}
-//
-//		@Override
-//		public void beforeTextChanged(CharSequence text, int start, int count, int after) {
-//			// Check if some text will be removed.
-//			if (count > 0) {
-//				int end = start + count;
-//				Editable message = mEditText.getEditableText();
-//				ImageSpan[] list = message.getSpans(start, end, ImageSpan.class);
-//
-//				for (ImageSpan span : list) {
-//					// Get only the smile that are inside of the changed
-//					// region.
-//					int spanStart = message.getSpanStart(span);
-//					int spanEnd = message.getSpanEnd(span);
-//					if ((spanStart < end) && (spanEnd > start)) {
-//						// Add to remove list
-//						imageSpans.add(span);
-//					}
-//				}
-//			}
-//		}
-//
-//		@Override
-//		public void afterTextChanged(Editable text) {
-//			Editable message = mEditText.getEditableText();
-//
-//			// Commit the smile to be removed.
-//			for (ImageSpan span : imageSpans) {
-//				int start = message.getSpanStart(span);
-//				int end = message.getSpanEnd(span);
-//
-//				// Remove the span
-//				message.removeSpan(span);
-//
-//				// Remove the remaining smile text.
-//				if (start != end) {
-//					message.delete(start, end);
-//				}
-//			}
-//			imageSpans.clear();
-//		}
-//
-//		@Override
-//		public void onTextChanged(CharSequence text, int start, int before, int count) {
-//		}
-//	}
-
 	private class EditTextTarget implements Target {
 		int start;
 		int end;
@@ -732,7 +647,7 @@ public class ChatFragment extends RxFragment
 
 		@Override
 		public void onBitmapFailed(Drawable errorDrawable) {
-			Log.d(LogUtils.TAG, "onBitmapFailed");
+			Log.e(TAG, "onBitmapFailed");
 		}
 
 		@Override
@@ -744,7 +659,7 @@ public class ChatFragment extends RxFragment
 	@Override
 	public void onSmileClicked(Smile smile) {
 		if (etNewMessage == null || smile == null) return;
-		Log.d(LogUtils.TAG, smile.toString());
+		Log.d(TAG, smile.toString());
         // add smile to Text Field
         addSmile(smile);
 	}
@@ -772,24 +687,26 @@ public class ChatFragment extends RxFragment
 
 	@OnClick(R.id.ibSmiles)
 	public void showSmileKeyboard() {
-		if (!smileKeyboard.isShowing()) {
-			if (smileKeyboard.isKeyBoardOpen()) {
-				smileKeyboard.showAtBottom();
+        if (smileKeyboard != null) {
+            if (!smileKeyboard.isShowing()) {
+                if (smileKeyboard.isKeyBoardOpen()) {
+                    smileKeyboard.showAtBottom();
 //				changeSmileKeyboardIcon(ibSmiles, R.drawable.ic_action_keyboard);
-			} else {
-				etNewMessage.setFocusableInTouchMode(true);
-				etNewMessage.requestFocus();
-				smileKeyboard.showAtBottomPending();
-				final InputMethodManager inputMethodManager = (InputMethodManager)
-						context.getSystemService(Context.INPUT_METHOD_SERVICE);
-				inputMethodManager.showSoftInput(etNewMessage, InputMethodManager.SHOW_IMPLICIT);
+                } else {
+                    etNewMessage.setFocusableInTouchMode(true);
+                    etNewMessage.requestFocus();
+                    smileKeyboard.showAtBottomPending();
+                    final InputMethodManager inputMethodManager = (InputMethodManager)
+                            context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    inputMethodManager.showSoftInput(etNewMessage, InputMethodManager.SHOW_IMPLICIT);
 //				changeSmileKeyboardIcon(ibSmiles, R.drawable.ic_action_keyboard);
-			}
-		} else {
-			smileKeyboard.dismiss();
-			// Dismiss a soft keyboard ?
-		}
-	}
+                }
+            } else {
+                smileKeyboard.dismiss();
+                // Dismiss a soft keyboard ?
+            }
+        }
+    }
 
     @OnClick(R.id.btLoadOldMessages)
     void loadHistory() {
@@ -821,24 +738,23 @@ public class ChatFragment extends RxFragment
             mService.getChatMessagesObservable()
                     .observeOn(AndroidSchedulers.mainThread())
                     .compose(bindToLifecycle())
-                    .subscribe(new Subscriber<Message>() {
-                        @Override
-                        public void onCompleted() {
-                            Log.d(TAG, "onCompleted: ChatMessagesObservable");
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            Log.e(TAG, "ChatMessagesObservable onError: e="+e);
-                        }
-
+                    .subscribe(new DefaultSubscriber<Message>() {
                         @Override
                         public void onNext(Message message) {
-//                      Log.d(TAG, "onNext: ChatMessage " + chatMessage);
-                            chatMessages.add(message);
+                                                        chatMessages.add(message);
                             final int size = chatMessages.size();
                             chatAdapter.notifyItemInserted(size);
                             scrollToBottom();
+                        }
+
+                        @Override
+                        public void onError(Throwable t) {
+
+                        }
+
+                        @Override
+                        public void onComplete() {
+
                         }
                     });
         }
@@ -856,7 +772,7 @@ public class ChatFragment extends RxFragment
         @Override
         public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
             super.onScrollStateChanged(recyclerView, newState);
-            Log.i(LogUtils.TAG, "newState="+newState + "");
+            Log.i(TAG, "newState="+newState + "");
             // 0 finger up
             // 1 scroll active
             if (newState == 1) isScrollToBottom = false;

@@ -14,41 +14,23 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.di;
+package com.slx.funstream.rest.model;
 
-import android.content.Context;
 
-import com.slx.funstream.App;
-import com.slx.funstream.utils.RxBus;
+public class StreamRequest {
 
-import dagger.Module;
-import dagger.Provides;
+	private String slug;
 
-@Module
-public class ApplicationModule {
-	private final App application;
 
-	public ApplicationModule(App application) {
-		this.application = application;
+	public StreamRequest(String slug) {
+		this.slug = slug;
 	}
 
-	@Provides
-	@PerApp
-	public App application() {
-		return this.application;
+	public String getSlug() {
+		return slug;
 	}
 
-	@Provides
-	@PerApp
-	public Context applicationContext() {
-		return this.application;
+	public void setSlug(String slug) {
+		this.slug = slug;
 	}
-
-
-	@Provides
-	@PerApp
-	public RxBus provideRxBus() {
-		return new RxBus();
-	}
-
 }

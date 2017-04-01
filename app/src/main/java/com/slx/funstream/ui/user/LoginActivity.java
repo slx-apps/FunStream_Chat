@@ -30,10 +30,15 @@ import android.util.Log;
 
 import com.slx.funstream.App;
 import com.slx.funstream.R;
+import com.slx.funstream.auth.UserStore;
+import com.slx.funstream.di.DiProvider;
 import com.slx.funstream.rest.model.OAuthResponse;
 import com.slx.funstream.rest.services.FunstreamApi;
 import com.slx.funstream.utils.PrefUtils;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
+
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -42,12 +47,14 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import dagger.android.AndroidInjection;
+import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subscribers.DisposableSubscriber;
 
-public class LoginActivity extends RxAppCompatActivity implements LoginFragment.LoginHandler {
+public class LoginActivity extends RxAppCompatActivity implements LoginFragment.LoginHandler,
+        DiProvider {
 	private static final String TAG = "LoginActivity";
 
     public static final String FIELD_USERID = "id";
@@ -61,17 +68,19 @@ public class LoginActivity extends RxAppCompatActivity implements LoginFragment.
     FunstreamApi api;
     @Inject
     PrefUtils prefUtils;
+    @Inject
+    UserStore userStore;
 
 	private FragmentManager fm;
 	private String oAuthCode;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+        AndroidInjection.inject(this);
 		super.onCreate(savedInstanceState);
 		setTheme(R.style.LoginActivityStyle);
 		setContentView(R.layout.activity_login);
 		ButterKnife.bind(this);
-        App.applicationComponent().inject(this);
 
 		setSupportActionBar(toolbar);
 		ActionBar actionBar = getSupportActionBar();
@@ -94,7 +103,6 @@ public class LoginActivity extends RxAppCompatActivity implements LoginFragment.
 					.commit();
 		}
 
-        //showMessage();
 	}
 
     @Override
@@ -102,68 +110,48 @@ public class LoginActivity extends RxAppCompatActivity implements LoginFragment.
         super.onStart();
         oAuthCode = prefUtils.getUserCode();
 
-//        Observable<OAuthResponse> tokenObservable = api.getTokenObs(new OAuthResponse(oAuthCode))
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .compose(bindToLifecycle());
-//                .subscribe(new Subscriber<OAuthResponse>() {
-//                    @Override
-//                    public void onCompleted() {
-//
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//                        e.printStackTrace();
-//                    }
-//
-//                    @Override
-//                    public void onNext(OAuthResponse oAuthResponse) {
-//
-//                    }
-//                });
-
-        Observable
-                .interval(5, TimeUnit.SECONDS)
+        Flowable.interval(5, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .map(aLong -> {
                     oAuthCode = prefUtils.getUserCode();
                     Log.d(TAG, "interval->map: " + oAuthCode);
+                    OAuthResponse oAuthResponse = new OAuthResponse(oAuthCode);
                     if (oAuthCode != null) {
                         try {
-                            OAuthResponse oAuthResponse = api.getToken(new OAuthResponse(oAuthCode)).execute().body();
+                            OAuthResponse res = api.getToken(new OAuthResponse(oAuthCode)).execute().body();
                             Log.d(TAG, "interval->map " + oAuthResponse);
-                            return oAuthResponse;
+                            if (res != null) {
+                                oAuthResponse = res;
+                            }
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
-                    return null;
-                    }
-                )
+                    return oAuthResponse;
+                })
                 .compose(bindToLifecycle())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<OAuthResponse>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                    }
+                .subscribe(new DisposableSubscriber<OAuthResponse>() {
 
                     @Override
                     public void onNext(OAuthResponse oAuthResponse) {
                         Log.d(TAG, "interval->onNext: "  + oAuthResponse);
-                        if (oAuthResponse != null) {
-                            String token = oAuthResponse.getToken();
+                        String token = oAuthResponse.getToken();
+                        if (oAuthResponse.getToken() != null) {
                             sendResult(oAuthResponse.getUser().getId(), oAuthResponse.getUser().getName(), token);
                         }
                     }
-                });
 
+                    @Override
+                    public void onError(Throwable t) {
+                        t.printStackTrace();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "onComplete");
+                    }
+                });
     }
 
     @Override
@@ -206,5 +194,20 @@ public class LoginActivity extends RxAppCompatActivity implements LoginFragment.
         builder.setMessage(R.string.auth_dialog_help_desc);
         builder.setPositiveButton("OK", null);
         builder.show();
+    }
+
+    @Override
+    public FunstreamApi getFunstreamApi() {
+        return api;
+    }
+
+    @Override
+    public UserStore getUserStore() {
+        return userStore;
+    }
+
+    @Override
+    public PrefUtils getPrefUtils() {
+        return prefUtils;
     }
 }

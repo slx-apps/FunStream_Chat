@@ -18,19 +18,23 @@ package com.slx.funstream.ui.user;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
-import com.jakewharton.rxbinding.view.RxView;
+import com.jakewharton.rxbinding2.view.RxView;
 import com.slx.funstream.App;
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
 import com.slx.funstream.model.SimpleToken;
 import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.utils.PrefUtils;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
+
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -40,13 +44,16 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import dagger.android.AndroidInjection;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subscribers.DisposableSubscriber;
 
 public class UserActivity extends RxAppCompatActivity {
     private static final String TAG = "UserActivity";
 
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
     @BindView(R.id.tvUserName)
     TextView tvUserName;
     @BindView(R.id.tvExpire)
@@ -64,11 +71,14 @@ public class UserActivity extends RxAppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
-        App.applicationComponent().inject(this);
         ButterKnife.bind(this);
 
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+        }
 
         RxView.clicks(btLogOut)
                 .compose(bindToLifecycle())
@@ -79,27 +89,14 @@ public class UserActivity extends RxAppCompatActivity {
                     finish();
                 });
 
-        userStore
-                .fetchUser()
+        userStore.userObservable()
                 .subscribeOn(Schedulers.io())
 //                .map(user -> {
-//                    api.getUser(new ChatUser(user.getId()));
+//                    api.userObservable(new ChatUser(user.getId()));
 //                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .compose(bindToLifecycle())
-                .subscribe(new Subscriber<CurrentUser>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.d(TAG, "UserStore->fetchUser->onCompleted");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d(TAG, "UserStore->fetchUser->onError");
-                        e.printStackTrace();
-
-                    }
-
+                .subscribe(new DisposableSubscriber<CurrentUser>() {
                     @Override
                     public void onNext(CurrentUser currentUser) {
                         Log.d(TAG, "UserStore->fetchUser->onNext " + currentUser);
@@ -112,11 +109,17 @@ public class UserActivity extends RxAppCompatActivity {
                             calendar.setTimeInMillis(simpleToken.getExp() * 1000);
                             tvExpire.setText(formatter.format(calendar.getTime()));
                         }
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+                        t.printStackTrace();
+                    }
+
+                    @Override
+                    public void onComplete() {
 
                     }
                 });
-
     }
-
-
 }

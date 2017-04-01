@@ -17,7 +17,6 @@
 package com.slx.funstream.ui.streams;
 
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -27,15 +26,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.slx.funstream.App;
 import com.slx.funstream.R;
 import com.slx.funstream.adapters.StreamListFragmentAdapter;
-import com.slx.funstream.auth.UserStore;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -48,11 +43,8 @@ public class StreamsContainerFragment extends Fragment {
 	@BindView(R.id.viewpager)
 	ViewPager viewpager;
 
-	@Inject
-	UserStore userStore;
 
 	private List<ChatTabItem> mTabs = new ArrayList<>();
-
 	public static final int TYPE_LIST_STREAMS = 0;
 	public static final int TYPE_LIST_CHANNELS = 1;
 	public static final int TYPE_LIST_FAVORITE = 2;
@@ -62,16 +54,14 @@ public class StreamsContainerFragment extends Fragment {
 	private Unbinder unbinder;
 
 	public static List<String> sChannels = new ArrayList<>();
+
 	static {
 		sChannels.add("main");
 		sChannels.add("admin");
-//		sChannels.add("support");//support/<id>
-//		sChannels.add("private");//private/<from_id>/<to_id>
-//		sChannels.add("notifications");//notifications/<user_id>
 	}
 
 	public StreamsContainerFragment() {
-		// Required empty public constructor
+
 	}
 
 	public static StreamsContainerFragment newInstance() {
@@ -80,12 +70,6 @@ public class StreamsContainerFragment extends Fragment {
 		//args.putBoolean(KEY, VALUE);
 		//fragment.setArguments(args);
 		return new StreamsContainerFragment();
-	}
-
-	@Override
-	public void onAttach(Context context) {
-		super.onAttach(context);
-		App.applicationComponent().inject(this);
 	}
 
 	@Override

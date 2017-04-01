@@ -14,7 +14,7 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.ui;
+package com.slx.funstream.ui.settings;
 
 import android.content.Context;
 import android.os.Bundle;

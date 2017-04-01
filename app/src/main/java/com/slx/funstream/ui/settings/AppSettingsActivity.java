@@ -14,23 +14,33 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.ui;
+package com.slx.funstream.ui.settings;
 
 
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+
+import com.slx.funstream.R;
+import com.slx.funstream.di.AppComponent;
 
 
-public class AppSettingsActivity extends PreferenceActivity {
+public class AppSettingsActivity extends AppCompatActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_settings);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        setSupportActionBar(toolbar);
 
 		AppSettingsFragment appSettingsFragment = new AppSettingsFragment();
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
-		ft.replace(android.R.id.content, appSettingsFragment);
+		ft.replace(R.id.settings_container, appSettingsFragment);
 		ft.commit();
 	}
 

@@ -36,6 +36,7 @@ public class FSRestClient {
 		// 2.0
 		Retrofit retrofit = new Retrofit.Builder()
 				//.addConverterFactory(MoshiConverterFactory.create())
+//				.addConverterFactory(new EnvelopingConverter())
 				.addConverterFactory(convFactory)
 				.addCallAdapterFactory(callAdapterFactory)
 				.client(client)

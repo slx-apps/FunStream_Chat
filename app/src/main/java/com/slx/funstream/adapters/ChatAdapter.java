@@ -39,12 +39,11 @@ import android.widget.TextView;
 import com.slx.funstream.App;
 import com.slx.funstream.R;
 import com.slx.funstream.auth.UserStore;
-import com.slx.funstream.chat.ChatServicePresenter;
+import com.slx.funstream.chat.ChatServiceController;
 import com.slx.funstream.chat.SmileRepo;
 import com.slx.funstream.model.ChatMessage;
 import com.slx.funstream.model.ChatUser;
 import com.slx.funstream.model.Message;
-import com.slx.funstream.model.SystemMessage;
 import com.slx.funstream.rest.model.Smile;
 import com.slx.funstream.utils.PrefUtils;
 import com.squareup.picasso.Picasso;
@@ -70,8 +69,10 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	private static final String TAG = "ChatAdapter";
 	private static final int FROM_TWITCH = -100;
 	private static final int FROM_GG = -101;
-	private List<Message> mMessages;
-	private Context context;
+    private final SmileRepo smileRepo;
+    private final Picasso picasso;
+    private final Context context;
+    private List<Message> mMessages;
 
 	private int primaryColor;
 	private int darkColor;
@@ -79,14 +80,6 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	// Picasso does not hold a strong reference to the Target object
 	private ArrayList<Target> targets = new ArrayList<>();
 
-	@Inject
-	SmileRepo smileRepo;
-	@Inject
-	Picasso picasso;
-	@Inject
-	PrefUtils prefUtils;
-	@Inject
-	UserStore userStore;
 	private boolean isShowSmileys = true;
     private int smileSizeMultiplier;
 
@@ -96,10 +89,11 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	private OnChatMessageClick callback;
 
-	public ChatAdapter(Context context) {
+	public ChatAdapter(Context context, SmileRepo smileRepo, Picasso picasso, boolean showSmileys) {
 		this.context = context;
-		App.applicationComponent().inject(this);
-		isShowSmileys = prefUtils.isShowSmileys();
+		this.smileRepo = smileRepo;
+		this.picasso = picasso;
+		this.isShowSmileys = showSmileys;
 
 		primaryColor = ContextCompat.getColor(context, R.color.primary);
 		darkColor = ContextCompat.getColor(context, R.color.black);
@@ -111,14 +105,14 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch (viewType) {
-            case ChatServicePresenter.MESSAGE_TYPE_CHAT:
+            case ChatServiceController.MESSAGE_TYPE_CHAT:
                 final View view = LayoutInflater.from(context).inflate(R.layout.row_chat_message, parent, false);
 
                 final ChatMessageHolder chatMessageHolder = new ChatMessageHolder(view);
                 chatMessageHolder.messageRoot.setOnClickListener(this);
                 return chatMessageHolder;
 
-            case ChatServicePresenter.MESSAGE_TYPE_SYSTEM:
+            case ChatServiceController.MESSAGE_TYPE_SYSTEM:
                 final View systemMessageView = LayoutInflater.from(context).inflate(R.layout.row_system_message, parent, false);
                 final SystemMessageHolder systemMessageHolder = new SystemMessageHolder(systemMessageView);
                 return systemMessageHolder;
@@ -135,7 +129,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         final Message m = mMessages.get(position);
 
         switch (m.getMessageType()) {
-            case ChatServicePresenter.MESSAGE_TYPE_CHAT:
+            case ChatServiceController.MESSAGE_TYPE_CHAT:
                 ChatMessageHolder holder = (ChatMessageHolder) viewHolder;
                 ChatMessage message = (ChatMessage) m;
 
@@ -193,7 +187,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
                 break;
 
-            case ChatServicePresenter.MESSAGE_TYPE_SYSTEM:
+            case ChatServiceController.MESSAGE_TYPE_SYSTEM:
                 SystemMessageHolder systemMessageHolder = (SystemMessageHolder) viewHolder;
 
                 systemMessageHolder.setMessage(m.getText());

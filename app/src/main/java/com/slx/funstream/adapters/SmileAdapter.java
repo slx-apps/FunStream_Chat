@@ -43,14 +43,12 @@ import javax.inject.Inject;
  *
  */
 public class SmileAdapter extends ArrayAdapter<Smile> {
-	OnSmileClickListener smileClickListener;
+	private OnSmileClickListener smileClickListener;
+	private Picasso picasso;
 
-	@Inject
-	Picasso smilePicasso;
-
-	public SmileAdapter(Context context, List<Smile> data) {
+	public SmileAdapter(Context context, List<Smile> data, Picasso picasso) {
 		super(context, R.layout.smile_item, data);
-		App.applicationComponent().inject(this);
+		this.picasso = picasso;
 	}
 
 	public void setSmileClickListener(OnSmileClickListener listener){
@@ -68,7 +66,7 @@ public class SmileAdapter extends ArrayAdapter<Smile> {
 		}
 		final Smile smile = getItem(position);
 		ViewHolder holder = (ViewHolder) v.getTag();
-		smilePicasso.load(smile.getUrl()).into(holder.icon);
+		picasso.load(smile.getUrl()).into(holder.icon);
 		holder.icon.setOnClickListener(view -> smileClickListener.onSmileClicked(getItem(position)));
 		return v;
 	}

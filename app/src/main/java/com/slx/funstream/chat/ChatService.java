@@ -26,26 +26,26 @@ import android.util.Log;
 import com.slx.funstream.App;
 import com.slx.funstream.model.ChatMessage;
 import com.slx.funstream.model.Message;
-import com.slx.funstream.model.SystemMessage;
 import com.slx.funstream.ui.chat.ChatFragment;
 
 import javax.inject.Inject;
 
-import rx.Observable;
-import rx.subjects.BehaviorSubject;
+import dagger.android.AndroidInjection;
+import io.reactivex.Flowable;
 
 public class ChatService extends Service {
 	private static final String TAG = "ChatService";
 	private LocalBinder mLocalBinder = new LocalBinder();
 
 	@Inject
-    ChatServicePresenter presenter;
+    ChatServiceController controller;
 
 	@Override
 	public void onCreate() {
 		Log.d(TAG, "onCreate");
-		App.initializeChatComponent().inject(this);
-		presenter.setView(this);
+        AndroidInjection.inject(this);
+		controller.setService(this);
+		super.onCreate();
 	}
 
 	@Override
@@ -55,9 +55,13 @@ public class ChatService extends Service {
 
 		if (intent.hasExtra(ChatFragment.CHANNEL_ID)) {
 			channelId = intent.getLongExtra(ChatFragment.CHANNEL_ID, -1);
-		}
-		connectChat(channelId);
-		joinChannel(channelId);
+
+            connectChat(channelId);
+            joinChannel(channelId);
+		} else {
+            Log.e(TAG, "onStartCommand no channel id to connect, stop service");
+            stopSelf();
+        }
 
 		return START_NOT_STICKY;
 	}
@@ -70,39 +74,39 @@ public class ChatService extends Service {
 	@Override
 	public void onDestroy() {
 		disconnectChat();
-		presenter.setView(null);
+		controller.setService(null);
 	}
 
     public void connectChat(long channelId) {
-        presenter.connect(channelId);
+        controller.connect(channelId);
     }
 
     public void disconnectChat() {
-        presenter.disconnect();
+        controller.disconnect();
     }
 
     public void joinChannel(long channel) {
-        presenter.joinChannel(channel);
+        controller.joinChannel(channel);
     }
 
     public void leaveChannel(long channel) {
-        presenter.leaveChannel(channel);
+        controller.leaveChannel(channel);
     }
 
     public void sendMessage(ChatMessage newMessage) {
-        presenter.sendMessage(newMessage);
+        controller.sendMessage(newMessage);
     }
 
     public void loginChat() {
-        presenter.loginChat();
+        controller.loginChat();
     }
 
-	public Observable<Message> getChatMessagesObservable() {
-		return presenter.getChatMessagesObservable();
+	public Flowable<Message> getChatMessagesObservable() {
+        return controller.getChatMessagesObservable();
 	}
 
     public void loadHistory() {
-        presenter.loadHistory();
+        controller.loadHistory();
     }
 
     public class LocalBinder extends Binder {

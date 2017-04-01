@@ -41,13 +41,13 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.jakewharton.rxbinding.support.v7.widget.RxSearchView;
+import com.jakewharton.rxbinding2.support.v7.widget.RxSearchView;
 import com.slx.funstream.App;
 import com.slx.funstream.R;
 import com.slx.funstream.adapters.ChatChannelsAdapter;
 import com.slx.funstream.auth.UserStore;
 import com.slx.funstream.chat.ChatApiUtils;
-import com.slx.funstream.model.Stream;
+import com.slx.funstream.rest.model.Stream;
 import com.slx.funstream.rest.FSRestClient;
 import com.slx.funstream.rest.StreamsRepo;
 import com.slx.funstream.rest.model.Category;
@@ -56,7 +56,7 @@ import com.slx.funstream.ui.streams.ChannelsAdapter.OnChatChannelClick;
 import com.slx.funstream.utils.LogUtils;
 import com.slx.funstream.utils.PrefUtils;
 import com.squareup.picasso.Picasso;
-import com.trello.rxlifecycle.components.support.RxFragment;
+import com.trello.rxlifecycle2.components.support.RxFragment;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -67,18 +67,21 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import dagger.android.AndroidInjection;
+import dagger.android.AndroidInjector;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Function;
+import io.reactivex.observers.DefaultObserver;
+import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.schedulers.Schedulers;
 
 import static com.slx.funstream.ui.streams.StreamsContainerFragment.TYPE_LIST_FAVORITE;
 import static com.slx.funstream.ui.streams.StreamsContainerFragment.TYPE_LIST_STREAMS;
 import static com.slx.funstream.utils.NetworkUtils.isNetworkConnectionPresent;
 
 public class ChannelListFragment extends RxFragment implements OnChatChannelClick,
-		AdapterView.OnItemSelectedListener,
-        rx.Observer<List<Stream>> {
+		AdapterView.OnItemSelectedListener {
     private static final String TAG = "ChannelListFragment";
     public static final String KEY_CHAT_FRAGMENT_TYPE = "chat_fragment_type";
 	public static final int SEARCH_VIEW_TIMEOUT = 400;
@@ -92,18 +95,14 @@ public class ChannelListFragment extends RxFragment implements OnChatChannelClic
 
 	private int fragType;
 
-	private List<Stream> mStreams = new LinkedList<>();
+	private List<Stream> streams = new LinkedList<>();
 	private ChannelsAdapter mChannelsAdapter;
 	private ChatChannelsAdapter mChatChannelsAdapter;
 
 	@Inject
-	FSRestClient restClient;
-	@Inject
 	Picasso picasso;
 	@Inject
 	PrefUtils prefUtils;
-	@Inject
-	UserStore userStore;
     @Inject
     StreamsRepo streamsRepo;
 
@@ -113,8 +112,7 @@ public class ChannelListFragment extends RxFragment implements OnChatChannelClic
 	private List<Category> categories;
 	private Unbinder unbinder;
 
-	public ChannelListFragment() {
-	}
+	public ChannelListFragment() {}
 
 	public static ChannelListFragment newInstance(int frag_type) {
 		ChannelListFragment fragment = new ChannelListFragment();
@@ -126,8 +124,9 @@ public class ChannelListFragment extends RxFragment implements OnChatChannelClic
 
 	@Override
 	public void onAttach(Context context) {
+//		AndroidInjection.inject(this);
+        ((StreamsActivity) context).supportFragmentInjector().inject(this);
 		super.onAttach(context);
-		App.applicationComponent().inject(this);
 	}
 
 	@Override
@@ -213,36 +212,54 @@ public class ChannelListFragment extends RxFragment implements OnChatChannelClic
 //					.map(q -> q.toString().toLowerCase())
 					.observeOn(AndroidSchedulers.mainThread())
 					.compose(bindToLifecycle())
-					.subscribe(new Subscriber<CharSequence>() {
-						@Override
-						public void onCompleted() {
-
-						}
-
-						@Override
-						public void onError(Throwable e) {
-
-						}
-
-						@Override
-						public void onNext(CharSequence query) {
-                            filterChannels(query);
+					.subscribe(new DefaultObserver<CharSequence>() {
+                        @Override
+                        public void onNext(CharSequence charSequence) {
+                            filterChannels(charSequence);
                         }
-					});
+
+                        @Override
+                        public void onError(Throwable e) {
+
+                        }
+
+                        @Override
+                        public void onComplete() {
+
+                        }
+                    });
 		}
 	}
 
     private void filterChannels(CharSequence query) {
         List<Stream> filtered = new LinkedList<>();
         streamsRepo.getAllStreams(category)
-                .flatMap(Observable::from)
-                .filter(stream -> stream.getStreamer().getName().toLowerCase().contains(query)
-                        ||
-                        stream.getName().toLowerCase().contains(query))
+                .flattenAsFlowable(new Function<List<Stream>, Iterable<?>>() {
+                    @Override
+                    public Iterable<Stream> apply(@NonNull List<Stream> streams) throws Exception {
+                        return streams;
+                    }
+                })
+//                .flatMap(new Function<List<Stream>, SingleSource<?>>() {
+//					@Override
+//					public SingleSource<?> apply(@NonNull List<Stream> streams) throws Exception {
+//						return Flowable.();
+//					}
+//				})
+                .filter(object -> {
+                    Stream stream = (Stream) object;
+                    return stream.getStreamer().getName().toLowerCase().contains(query)
+                            ||
+                            stream.getName().toLowerCase().contains(query);
+                })
                 .compose(bindToLifecycle())
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Stream>() {
+                .subscribe();
+
+        /*
+
+        new Subscriber<Stream>() {
                     @Override
                     public void onCompleted() {
                         mChannelsAdapter.setData(filtered);
@@ -257,7 +274,9 @@ public class ChannelListFragment extends RxFragment implements OnChatChannelClic
                     public void onNext(Stream stream) {
                         filtered.add(stream);
                     }
-                });
+                }
+
+         */
     }
 
     @Override
@@ -319,14 +338,32 @@ public class ChannelListFragment extends RxFragment implements OnChatChannelClic
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
 				.compose(bindToLifecycle())
-				.subscribe(this);
+				.subscribe(new DisposableSingleObserver<List<Stream>>() {
+					@Override
+					public void onSuccess(List<Stream> list) {
+						swipeContainer.setRefreshing(false);
+                        streams = list;
+						if (mChannelsAdapter != null) {
+							mChannelsAdapter.setData(streams);
+						}
+					}
+
+					@Override
+					public void onError(Throwable e) {
+						Snackbar.make(rootView, getString(R.string.error_streams_loading), Snackbar.LENGTH_LONG)
+								.setAction(R.string.error_loading_action, reloadListener)
+								.show();
+						swipeContainer.setRefreshing(false);
+						Log.e(LogUtils.TAG, e.toString());
+					}
+				});
 	}
 
 
 
 	@Override
 	public void onStreamClicked(Stream stream) {
-		startStreamChatActivity(stream.getStreamer().getId(), stream.getStreamer().getName());
+		startStreamChatActivity(stream);
 	}
 
 	@Override
@@ -348,14 +385,18 @@ public class ChannelListFragment extends RxFragment implements OnChatChannelClic
 		}
 	}
 
-	private void startStreamChatActivity(long streamerId, String streamerName){
-		Intent startStream = new Intent(getActivity(), StreamActivity.class);
-		startStream.putExtra(StreamActivity.STREAMER_NAME, streamerName);
-		startStream.putExtra(StreamActivity.STREAMER_ID, streamerId);
-		startActivity(startStream);
+	private void startStreamChatActivity(Stream stream) {
+		if (stream.getStreamer() != null) {
+			Intent startStream = new Intent(getActivity(), StreamActivity.class);
+			startStream.putExtra(StreamActivity.STREAMER_NAME, stream.getStreamer().getName());
+			startStream.putExtra(StreamActivity.STREAMER_ID, stream.getStreamer().getId());
+			startActivity(startStream);
+		} else {
+			Log.e(TAG, "startStreamChatActivity: Streamer is null");
+		}
 	}
 
-	private void startChannelChatActivity(long id, String channel){
+	private void startChannelChatActivity(long id, String channel) {
 		Intent intent = new Intent(getActivity(), StreamActivity.class);
 		intent.putExtra(StreamActivity.STREAMER_NAME, channel);
 		intent.putExtra(StreamActivity.STREAMER_ID, id);
@@ -447,28 +488,4 @@ public class ChannelListFragment extends RxFragment implements OnChatChannelClic
 		mToolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
 		mToolbar.addView(mNavigationSpinner);
 	}
-
-    @Override
-    public void onCompleted() {
-        Log.i(LogUtils.TAG, "fetchStreams onCompleted");
-        swipeContainer.setRefreshing(false);
-
-    }
-
-    @Override
-    public void onError(Throwable e) {
-        Snackbar.make(rootView, getString(R.string.error_streams_loading), Snackbar.LENGTH_LONG)
-                .setAction(R.string.error_loading_action, reloadListener)
-                .show();
-        swipeContainer.setRefreshing(false);
-        Log.e(LogUtils.TAG, e.toString());
-    }
-
-    @Override
-    public void onNext(List<Stream> streams) {
-        mStreams = streams;
-        if (mChannelsAdapter != null) {
-            mChannelsAdapter.setData(streams);
-        }
-    }
 }

@@ -38,7 +38,7 @@ public final class APIUtils {
 	public static final String API_AUTH_LOGIN = "/api/user/login";
 	public static final String API_AUTH_LOGOUT = "/api/user/logout";
 
-//	public static final String API_STREAM = "/api/stream";
+	public static final String API_STREAM = "/api/stream";
 	public static final String API_CATEGORY = "/api/category";
 	public static final String API_SMILE = "/api/smile";
 	public static final String API_USER = "/api/user";
@@ -53,6 +53,27 @@ public final class APIUtils {
 	public static final String OAUTH_BROWSER_LINK = "http://funstream.tv/oauth/";
 
 	public static final String API_IDS_TO_LIST = "/api/user/list";
+
+	//Twitch
+	public static final String TWITCH_KRAKEN_API_ENDPOINT = "https://api.twitch.tv/kraken";
+	public static final String TWITCH_USHER_API_ENDPOINT = "http://usher.twitch.tv/api";
+	public static final String TWITCH_KRAKEN_BASE = "https://api.twitch.tv/kraken";
+	public static final String TWITCH_BASE = "https://api.twitch.tv/api/";
+
+
+	public static final String TWITCH_API_STREAM = "/streams/{channel}";
+	public static final String TWITCH_API_ACCESS_TOKEN = "/channels/{channel}/access_token";
+
+//	public static final String TWITCH_USHER_STREAM_PLAYLIST = "/channel/hls/{channel}.m3u8?player=twitchweb&token={token}&sig={sig}&allow_audio_only=true&allow_source=true&type=any&p={random}";.
+	public static final String TWITCH_USHER_STREAM_PLAYLIST = "/channel/hls/{channel}.m3u8";
+
+	// Goodgame
+	public static final String GOODGAME_HLS_ENDPOINT = "http://hls.goodgame.ru";
+	public static final String GOODGAME_STREAM = "/hls/{channel}.smil";
+
+	// Cybergame
+	public static final String CYBERGAME_API_ENDPOINT = "http://api.cybergame.tv";
+	public static final String CYBERGAME_STREAM = "/p/playlist.smil?channel={channel}";
 
 
 	private APIUtils(){

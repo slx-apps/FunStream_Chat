@@ -26,20 +26,40 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.slx.funstream.R;
+import com.slx.funstream.auth.UserStore;
+import com.slx.funstream.di.DiProvider;
+import com.slx.funstream.rest.services.FunstreamApi;
 import com.slx.funstream.ui.AboutActivity;
-import com.slx.funstream.ui.AppSettingsActivity;
+import com.slx.funstream.ui.settings.AppSettingsActivity;
+import com.slx.funstream.utils.PrefUtils;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import dagger.android.AndroidInjection;
+import dagger.android.DispatchingAndroidInjector;
+import dagger.android.support.HasDispatchingSupportFragmentInjector;
 
 
-public class StreamsActivity extends AppCompatActivity {
+public class StreamsActivity extends AppCompatActivity
+		implements DiProvider, HasDispatchingSupportFragmentInjector {
 
 	@BindView(R.id.toolbar)
 	Toolbar toolbar;
 
+    @Inject
+    FunstreamApi api;
+    @Inject
+    UserStore userStore;
+    @Inject
+    PrefUtils prefUtils;
+	@Inject
+	DispatchingAndroidInjector<Fragment> fragmentInjector;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+        AndroidInjection.inject(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_streams);
 		ButterKnife.bind(this);
@@ -79,4 +99,23 @@ public class StreamsActivity extends AppCompatActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	@Override
+	public DispatchingAndroidInjector<Fragment> supportFragmentInjector() {
+		return fragmentInjector;
+	}
+
+    @Override
+    public FunstreamApi getFunstreamApi() {
+        return api;
+    }
+
+    @Override
+    public UserStore getUserStore() {
+        return userStore;
+    }
+
+    @Override
+    public PrefUtils getPrefUtils() {
+        return prefUtils;
+    }
 }

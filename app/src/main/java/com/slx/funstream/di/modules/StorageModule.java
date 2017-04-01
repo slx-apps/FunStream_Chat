@@ -14,7 +14,7 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.di;
+package com.slx.funstream.di.modules;
 
 import android.content.Context;
 
@@ -22,21 +22,20 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.slx.funstream.auth.UserStore;
+import com.slx.funstream.di.PerApp;
 import com.slx.funstream.model.ChatResponse;
-import com.slx.funstream.model.Stream;
-import com.slx.funstream.rest.FSRestClient;
+import com.slx.funstream.rest.model.Stream;
 import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.rest.model.Smile;
 import com.slx.funstream.rest.services.FunstreamApi;
 import com.slx.funstream.utils.ChatResponseDeserializer;
-import com.slx.funstream.utils.FunstreamDeserializer;
+import com.slx.funstream.utils.ContentRootDeserializer;
 import com.slx.funstream.utils.PrefUtils;
 import com.slx.funstream.utils.SmileDeserializer;
 import com.slx.funstream.utils.UserSerializer;
 
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Map;
 
 import dagger.Module;
 import dagger.Provides;
@@ -44,30 +43,30 @@ import dagger.Provides;
 @Module
 public class StorageModule {
 
-	@Provides
-	@PerApp
-	public PrefUtils prefUtils(Context applicationContext){
-		return new PrefUtils(applicationContext.getApplicationContext());
-	}
+    @Provides
+    @PerApp
+    public PrefUtils prefUtils(Context applicationContext) {
+        return new PrefUtils(applicationContext.getApplicationContext());
+    }
 
-	@Provides
-	@PerApp
-	public UserStore provideUserStore(FunstreamApi funstreamApi, Gson gson, PrefUtils prefUtils){
-		return new UserStore(funstreamApi, gson, prefUtils);
-	}
+    @Provides
+    @PerApp
+    public UserStore provideUserStore(FunstreamApi funstreamApi, Gson gson, PrefUtils prefUtils) {
+        return new UserStore(funstreamApi, gson, prefUtils);
+    }
 
-	@Provides
-	@PerApp
-	Gson provideGson() {
-		Type listStreamType = new TypeToken<List<Stream>>() {}.getType();
-		Type smilesType = new TypeToken<List<Smile>>() {}.getType();
-		return new GsonBuilder()
-			//.serializeNulls()
-			.registerTypeAdapter(listStreamType, new FunstreamDeserializer<List<Stream>>())
-			.registerTypeAdapter(smilesType, new SmileDeserializer())
-			.registerTypeAdapter(ChatResponse.class, new ChatResponseDeserializer())
-			.registerTypeAdapter(CurrentUser.class, new UserSerializer())
-			.create();
-	}
+    @Provides
+    @PerApp
+    public Gson provideGson() {
+        Type listStreamType = new TypeToken<List<Stream>>() {}.getType();
+        Type smilesType = new TypeToken<List<Smile>>() {}.getType();
+        return new GsonBuilder()
+                //.serializeNulls()
+                .registerTypeAdapter(listStreamType, new ContentRootDeserializer<List<Stream>>())
+                .registerTypeAdapter(smilesType, new SmileDeserializer())
+                .registerTypeAdapter(ChatResponse.class, new ChatResponseDeserializer())
+                .registerTypeAdapter(CurrentUser.class, new UserSerializer())
+                .create();
+    }
 
 }

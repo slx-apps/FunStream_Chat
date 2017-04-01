@@ -35,6 +35,7 @@ import android.widget.PopupWindow;
 import com.slx.funstream.R;
 import com.slx.funstream.rest.model.Smile;
 import com.slx.funstream.ui.chat.SmileGridView.OnSmileClickListener;
+import com.squareup.picasso.Picasso;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ import java.util.List;
 
 public class SmileKeyboard extends PopupWindow {
 	private static final int MAX_TABS = 9;
+	private final Picasso picasso;
 	private Context context;
 	private WeakReference<View> contentRoot;
 	private Collection<Smile> smileList;
@@ -63,11 +65,13 @@ public class SmileKeyboard extends PopupWindow {
 	OnSmileBackspaceClickListener onSmileBackspaceClickListener;
 	OnSoftKeyboardOpenCloseListener onSoftKeyboardOpenCloseListener;
 
-	public SmileKeyboard(Context context, View contentRoot, Collection<Smile> smileList) {
+	public SmileKeyboard(Context context, View contentRoot, Collection<Smile> smileList, Picasso picasso) {
 		super(context, null, 0);
 		this.context = context;
 		this.contentRoot = new WeakReference<>(contentRoot);
 		this.smileList = smileList;
+		this.picasso = picasso;
+
 		final View view = createView();
 		setContentView(view);
 		// please always make the soft input area visible when this window receives input focus
@@ -98,7 +102,7 @@ public class SmileKeyboard extends PopupWindow {
 			tabs.get(smiley.getLevel()).add(smiley);
 		}
 		for (List<Smile> tab : tabs) {
-			pagersGridViews.add(new SmileGridView(context, tab, this));
+			pagersGridViews.add(new SmileGridView(context, tab, this, picasso));
 		}
 
 		SmileTabPagerAdapter mSmileTabAdapter = new SmileTabPagerAdapter(pagersGridViews);

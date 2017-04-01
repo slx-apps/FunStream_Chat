@@ -17,9 +17,13 @@
 package com.slx.funstream.model;
 
 
-public class Streamer {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Streamer implements Parcelable {
 	private long id;
 	private String name;
+	private String slug;
 
 	public Streamer() {}
 
@@ -31,4 +35,47 @@ public class Streamer {
 		return name;
 	}
 
+	public String getSlug() {
+		return slug;
+	}
+
+    @Override
+    public String toString() {
+        return "Streamer{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", slug='" + slug + '\'' +
+                '}';
+    }
+
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeLong(this.id);
+		dest.writeString(this.name);
+		dest.writeString(this.slug);
+	}
+
+	protected Streamer(Parcel in) {
+		this.id = in.readLong();
+		this.name = in.readString();
+		this.slug = in.readString();
+	}
+
+	public static final Parcelable.Creator<Streamer> CREATOR = new Parcelable.Creator<Streamer>() {
+		@Override
+		public Streamer createFromParcel(Parcel source) {
+			return new Streamer(source);
+		}
+
+		@Override
+		public Streamer[] newArray(int size) {
+			return new Streamer[size];
+		}
+	};
 }

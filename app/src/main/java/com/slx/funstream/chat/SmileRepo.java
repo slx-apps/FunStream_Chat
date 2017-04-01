@@ -23,17 +23,14 @@ import com.slx.funstream.chat.events.SmileLoadEvent;
 import com.slx.funstream.rest.model.Smile;
 import com.slx.funstream.rest.services.FunstreamApi;
 import com.slx.funstream.utils.RxBus;
-import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.schedulers.Schedulers;
 
 public class SmileRepo {
     private static final String TAG = "SmileRepo";
@@ -51,8 +48,7 @@ public class SmileRepo {
 	}
 
 	public void loadSmiles() {
-		funstreamApi
-                .smileyObservable()
+		funstreamApi.smileyObservable()
                 .map(list -> {
                     Map<String, Smile> map = new HashMap<>();
                     for (Smile smile : list) {
@@ -62,34 +58,19 @@ public class SmileRepo {
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Map<String, Smile>>() {
+                .subscribe(new DisposableSingleObserver<Map<String, Smile>>() {
                     @Override
-                    public void onCompleted() {
-                        Log.d(TAG, "loadSmiles onCompleted");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(TAG, "onError: "+e);
-                    }
-
-                    @Override
-                    public void onNext(Map<String, Smile> smileMap) {
+                    public void onSuccess(Map<String, Smile> smileMap) {
                         Log.d(TAG, "smile loaded");
                         map = smileMap;
                         rxBus.send(new SmileLoadEvent(smileMap));
                     }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                    }
                 });
-		// +
-//		smiles = response.body();
-//		Log.d(TAG, "Smiles loaded. Size=" + response.body().size());
-//		//warmSmileImages(smiles);
-//		isSmilesInitialized = true;
-//		if (getCallback() != null) getCallback().onSmileLoaded();
-		// -
-//		Log.e(TAG, "Can't load smiles " + t.toString());
-//		// mark init anyway
-//		isSmilesInitialized = true;
 	}
 
 	public Smile getSmile(String pattern) {
@@ -102,36 +83,4 @@ public class SmileRepo {
     public Map<String, Smile> getSmiles() {
         return map;
     }
-
-    //	private void warmSmileImages(List<Map<String, Smile>> smiles) {
-//		Log.d(TAG, "warmSmileImages");
-//		for (int i = 0; i < smiles.size(); i++) {
-//			if (i>=2) break;
-//			List<Smile> smilesList = Collections.list(Collections.enumeration(smiles.get(i).values()));
-//
-//			for (Smile smiley : smilesList) {
-//				if (!isEmpty(smiley.getUrl())) {
-//					picasso
-//							.load(smiley.getUrl())
-//							.fetch(new com.squareup.picasso.Callback() {
-//								@Override
-//								public void onSuccess() {
-//									isSmilesInitialized = true;
-//									if (getCallback() != null) {
-//										getCallback().onSmileLoaded();
-//									}
-//								}
-//
-//								@Override
-//								public void onError() {
-//									isSmilesInitialized = true;
-//									if (getCallback() != null) {
-//										getCallback().onSmileLoaded();
-//									}
-//								}
-//							});
-//				}
-//			}
-//		}
-//	}
 }

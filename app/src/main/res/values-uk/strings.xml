@@ -80,4 +80,9 @@
   <string name="user_expire_label">Токен дійсний до :</string>
   <string name="auth_dialog_help_title">Authentication</string>
   <string name="auth_dialog_help_desc">Enter your login password and click on Confirm button</string>
+    <string name="chat_user_list_empty">Тут нiкого немае</string>
+  <string name="audio">Аудио</string>
+  <string name="text">Текст</string>
+  <string name="video">Видео</string>
+    <string name="title_user_activity">Аккаунт</string>
 </resources>

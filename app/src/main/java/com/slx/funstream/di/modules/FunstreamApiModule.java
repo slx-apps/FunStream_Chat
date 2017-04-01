@@ -14,7 +14,7 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.di;
+package com.slx.funstream.di.modules;
 
 import com.google.gson.Gson;
 import com.slx.funstream.chat.SmileRepo;
@@ -24,14 +24,13 @@ import com.slx.funstream.rest.FSRestClient;
 import com.slx.funstream.rest.StreamsRepo;
 import com.slx.funstream.rest.services.FunstreamApi;
 import com.slx.funstream.utils.RxBus;
-import com.squareup.picasso.Picasso;
 
 import dagger.Module;
 import dagger.Provides;
 import okhttp3.OkHttpClient;
 import retrofit2.CallAdapter;
 import retrofit2.Converter;
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 @Module
@@ -58,7 +57,7 @@ public class FunstreamApiModule {
 	@Provides
 	@PerApp
 	CallAdapter.Factory provideCallAdapterFactory() {
-		return RxJavaCallAdapterFactory.create();
+		return RxJava2CallAdapterFactory.create();
 	}
 
 	@Provides

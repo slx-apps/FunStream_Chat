@@ -23,7 +23,7 @@ public class CurrentUser {
 	private boolean guest;
 	private long id;
 	private String name;
-	UserSettings settings;
+	private UserSettings settings;
 
 	public boolean isGuest() {
 		return guest;

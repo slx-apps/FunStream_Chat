@@ -18,7 +18,7 @@ package com.slx.funstream.rest.services;
 
 
 import com.slx.funstream.model.ChatUser;
-import com.slx.funstream.model.Stream;
+import com.slx.funstream.rest.model.Stream;
 import com.slx.funstream.rest.APIUtils;
 import com.slx.funstream.rest.model.AuthRequest;
 import com.slx.funstream.rest.model.AuthResponse;
@@ -31,17 +31,19 @@ import com.slx.funstream.rest.model.CurrentUser;
 import com.slx.funstream.rest.model.OAuthRequest;
 import com.slx.funstream.rest.model.OAuthResponse;
 import com.slx.funstream.rest.model.Smile;
+import com.slx.funstream.rest.model.StreamRequest;
 
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Single;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
-import rx.Observable;
 
 public interface FunstreamApi {
 
@@ -53,12 +55,12 @@ public interface FunstreamApi {
 	// Categories
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.API_CATEGORY)
-	Observable<Category> getCategoriesWithSubs(@Body CategoryRequest categoryRequest);
+	Single<Category> getCategoriesWithSubs(@Body CategoryRequest categoryRequest);
 
 	//
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.API_CONTENT)
-	Observable<List<Stream>> getStreams(@Body ContentRequest contentRequest);
+	Single<List<Stream>> getStreams(@Body ContentRequest contentRequest);
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.API_AUTH_LOGIN)
@@ -74,7 +76,7 @@ public interface FunstreamApi {
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@GET(APIUtils.API_SMILE)
-	Observable<List<Smile>> smileyObservable();
+	Single<List<Smile>> smileyObservable();
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.API_USER)
@@ -86,7 +88,7 @@ public interface FunstreamApi {
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.OAUTH_REQUEST)
-	Observable<OAuthResponse> getPermissionCodeObs(@Body OAuthRequest oAuthRequest);
+	Single<OAuthResponse> getPermissionCodeObs(@Body OAuthRequest oAuthRequest);
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.OAUTH_EXCHANGE)
@@ -94,13 +96,29 @@ public interface FunstreamApi {
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.OAUTH_EXCHANGE)
-	Observable<OAuthResponse> getTokenObs(@Body OAuthResponse response);
+	Single<OAuthResponse> getTokenObs(@Body OAuthResponse response);
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.API_IDS_TO_LIST)
-	Observable<ChatUser[]> getChatUsers(@Body ChatListRequest chatListRequest);
+	Single<ChatUser[]> getChatUsers(@Body ChatListRequest chatListRequest);
 
 	@Headers(APIUtils.HEADER_API_VERSION)
 	@POST(APIUtils.API_CURRENT_USER)
-	Observable<CurrentUser> getCurrentUser(@Header(APIUtils.HEADER_API_TOKEN) String token);
+	Single<CurrentUser> getCurrentUser(@Header(APIUtils.HEADER_API_TOKEN) String token);
+
+
+	@Headers(APIUtils.HEADER_API_VERSION)
+	@POST(APIUtils.API_STREAM)
+	void getStream(@Body StreamRequest streamRequest, Callback<Stream> callback);
+	//{streamer: "Clever.Alex007", options: {players: true}}
+
+	@Headers(APIUtils.HEADER_API_VERSION)
+	@POST(APIUtils.API_STREAM)
+	Stream getStream(@Body StreamRequest streamRequest);
+	//{streamer: "Clever.Alex007", options: {players: true}}
+
+
+	@Headers(APIUtils.HEADER_API_VERSION)
+	@POST(APIUtils.API_STREAM)
+	Single<Stream> streamObservable(@Body StreamRequest streamRequest);
 }

@@ -20,13 +20,13 @@ package com.slx.funstream.model;
 public class ChatListResult {
 	String message;
 	Integer amount;
-	Integer[] users;
+	ChatUser[] users;
 
 	public Integer getAmount() {
 		return amount;
 	}
 
-	public Integer[] getUsers() {
+	public ChatUser[] getUsers() {
 		return users;
 	}
 

@@ -25,6 +25,7 @@ import android.widget.GridView;
 import com.slx.funstream.R;
 import com.slx.funstream.adapters.SmileAdapter;
 import com.slx.funstream.rest.model.Smile;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class SmileGridView {
 	SmileKeyboard smileKeyboard;
 	List<Smile> smiles;
 
-	public SmileGridView(Context context, List<Smile> smilesIcons, SmileKeyboard smilePopup) {
+	public SmileGridView(Context context, List<Smile> smilesIcons, SmileKeyboard smilePopup, Picasso picasso) {
 		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
 		this.smileKeyboard = smilePopup;
 		rootView = inflater.inflate(R.layout.smile_grid, null);
@@ -51,9 +52,7 @@ public class SmileGridView {
 
 		smiles = smilesIcons;
 
-
-
-		SmileAdapter mAdapter = new SmileAdapter(context, smiles);
+		SmileAdapter mAdapter = new SmileAdapter(context, smiles, picasso);
 		mAdapter.setSmileClickListener(smile -> {
 			if (smileKeyboard.onSmileClickListener != null) {
 				smileKeyboard.onSmileClickListener.onSmileClicked(smile);

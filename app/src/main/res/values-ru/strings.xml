@@ -80,4 +80,9 @@
   <string name="user_expire_label">Токен действителен до :</string>
   <string name="auth_dialog_help_title">Авторизация</string>
   <string name="auth_dialog_help_desc">Введите логин и пароль и нажмите на кнопку Подтвердить. Приложение не сохраняет Ваш логин или пароль.</string>
+    <string name="chat_user_list_empty">Тут никого нет</string>
+  <string name="audio">Аудио</string>
+  <string name="text">Текст</string>
+  <string name="video">Видео</string>
+    <string name="title_user_activity">Аккаунт</string>
 </resources>

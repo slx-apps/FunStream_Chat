@@ -39,8 +39,7 @@
             android:label="@string/activity_stream"
             android:parentActivityName=".ui.streams.StreamsActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
-            android:windowSoftInputMode="adjustResize"
-            >
+            android:windowSoftInputMode="adjustResize">
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -52,7 +51,7 @@
             android:configChanges="keyboardHidden|orientation|screenSize" >
         </activity>
         <activity
-            android:name=".ui.AppSettingsActivity"
+            android:name=".ui.settings.AppSettingsActivity"
             android:exported="false"
             android:label="@string/action_settings" >
         </activity>
@@ -61,7 +60,9 @@
             android:label="@string/title_activity_about" >
         </activity>
         <activity
-            android:name=".ui.user.UserActivity">
+            android:name=".ui.user.UserActivity"
+            android:label="@string/title_user_activity"
+            android:parentActivityName=".ui.streams.StreamActivity">
         </activity>
         <service android:name=".chat.ChatService"
                  android:label="@string/service_chat_label">

@@ -14,7 +14,7 @@
  *   limitations under the License.
  */
 
-package com.slx.funstream.di;
+package com.slx.funstream.di.modules;
 
 
 import android.content.Context;
@@ -22,6 +22,7 @@ import android.content.Context;
 import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.jakewharton.picasso.OkHttp3Downloader;
 import com.slx.funstream.BuildConfig;
+import com.slx.funstream.di.PerApp;
 import com.slx.funstream.rest.UserAgentInterceptor;
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
@@ -48,7 +49,7 @@ import okhttp3.OkHttpClient;
 @Module
 public class NetworkModule {
 	private static final long DISK_CACHE_SIZE = 50 * 1024 * 1024;//50mb
-	private static final int PICASSO_MEMORY_CASHE_SIZE = 20 * 1024 * 1024;//20mb
+	private static final int PICASSO_MEMORY_CACHE_SIZE = 20 * 1024 * 1024;//20mb
 
 	private static final String USER_AGENT = "AndroidClient v/" + BuildConfig.VERSION_NAME;
 
@@ -84,7 +85,7 @@ public class NetworkModule {
 		return new Picasso.Builder(context)
 				.downloader(downloader)
 	//			.indicatorsEnabled(true)
-				.memoryCache(new LruCache(PICASSO_MEMORY_CASHE_SIZE))
+				.memoryCache(new LruCache(PICASSO_MEMORY_CACHE_SIZE))
 				.build();
 	}
 
